@@ -7,6 +7,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useRouter } from "next/navigation";
 import MaterialInput from "@/src/components/common/MaterialInput";
+import Cookies from "js-cookie";
 
 type UserLoginData = {
   email: string;
@@ -33,44 +34,49 @@ export default function LoginForm() {
       password: Yup.string().required("Password is required"),
     }),
 
-    onSubmit: async (values) => {
-      setLoading(true);
-      setError("");
+onSubmit: async (values) => {
+  setLoading(true);
+  setError("");
 
-      try {
-        const payload: UserLoginData = {
-          email: values.email,
-          password: values.password,
-        };
+  try {
+    const payload: UserLoginData = {
+      email: values.email,
+      password: values.password,
+    };
 
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/auth/login`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-          }
-        );
-
-        const data = await response.json();
-
-        if (response.ok) {
-          console.log("Login success:", data);
-
-          // Redirect after login
-          router.push("/products");
-        } else {
-          setError(data.error || "Login failed");
-        }
-      } catch (err) {
-        console.error(err);
-        setError("Something went wrong");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/auth/login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       }
+    );
 
-      setLoading(false);
-    },
+    const data = await response.json();
+
+    if (response.ok) {
+      console.log("Login successful", data);
+
+      // store token in cookie
+      Cookies.set("token", data.token, { expires: 7 });
+
+      // store user info in cookie
+      Cookies.set("user", JSON.stringify(data.user), { expires: 7 });
+
+      router.push("/products");
+    } else {
+      setError(data.error || "Login failed");
+    }
+  } catch (err) {
+    console.error(err);
+    setError("Something went wrong");
+  }
+
+  setLoading(false);
+}
   });
 
   return (
