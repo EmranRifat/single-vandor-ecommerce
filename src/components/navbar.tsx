@@ -1,173 +1,59 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { ShoppingCart, Menu, X, Search } from 'lucide-react';
-import { useState } from 'react';
-import { useCart } from '@/lib/cart-context';
-import { useAuth } from '@/lib/auth-context';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
-import { getCategories, getCartItems } from '@/lib/queries';
+import Link from "next/link";
+import { ShoppingCart } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const { sessionId, cartCount, setCartCount } = useCart();
   const { user, logout } = useAuth();
+  const router = useRouter();
 
-  const { data: categories = [] } = useQuery({
-    queryKey: ['categories'],
-    queryFn: getCategories
-  });
-
-  const { data: cartItems = [] } = useQuery({
-    queryKey: ['cart', sessionId],
-    queryFn: () => getCartItems(sessionId),
-    enabled: !!sessionId,
-    onSuccess: (data: any[]) => {
-      const totalItems = data.reduce(
-        (sum: number, item: { quantity: number }) => sum + item.quantity,
-        0
-      );
-      setCartCount(totalItems);
-    }
-  });
+  const handleLogout = () => {
+    logout();          // removes cookies + updates context
+    router.push("/");  // redirect without full reload
+  };
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
 
-        <div className="flex justify-between items-center h-16">
+        <Link href="/" className="text-2xl font-bold">
+          ShopHub
+        </Link>
 
-          {/* Logo */}
-          <div className="flex items-center space-x-8">
-            <Link href="/" className="text-2xl font-bold text-gray-900">
-              ShopHub
-            </Link>
-          </div>
+        <div className="flex items-center gap-4">
 
+          <Link href="/cart">
+            <ShoppingCart />
+          </Link>
 
-          {/* Right Section */}
-          <div className="flex items-center space-x-4">
-
-            <button className="p-2 text-gray-700 hover:text-gray-900 hidden md:block">
-              <Search className="w-5 h-5" />
-            </button>
-
-
-            {/* CART */}
-            <Link href="/cart" className="relative p-2 text-gray-700 hover:text-gray-900">
-              <ShoppingCart className="w-6 h-6" />
-
-              {cartCount > 0 && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
-                >
-                  {cartCount}
-                </motion.span>
-              )}
-            </Link>
-
-
-            {/* AUTH BUTTON */}
-            {!user ? (
-              <Link
-                href="/login"
-                className="hidden md:block bg-black text-white px-4 py-2 rounded-md text-sm"
-              >
-                Login
-              </Link>
-            ) : (
-              <div className="hidden md:flex items-center space-x-3">
-
-                <span className="text-sm font-medium text-gray-700">
-                  {user.name}
-                </span>
-
-                <button
-                  onClick={logout}
-                  className="bg-red-500 text-white px-3 py-1 rounded-md text-sm"
-                >
-                  Logout
-                </button>
-
-              </div>
-            )}
-
-
-            {/* MOBILE MENU */}
-            <button
-              className="md:hidden p-2"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          {!user ? (
+            <Link
+              href="/login"
+              className="bg-black text-white px-4 py-2 rounded-md"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+              Login
+            </Link>
+          ) : (
+            <div className="flex items-center gap-3">
 
-          </div>
-        </div>
-      </div>
+              <span className="text-gray-700 font-medium">
+                {user.name}
+              </span>
 
-
-      {/* MOBILE MENU */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t"
-          >
-            <div className="px-4 py-4 space-y-3">
-
-              <Link
-                href="/products"
-                className="block text-gray-700 hover:text-gray-900 py-2"
-                onClick={() => setMobileMenuOpen(false)}
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white px-3 py-1 rounded-md"
               >
-                All Products
-              </Link>
-
-
-              {/* MOBILE LOGIN */}
-              {!user ? (
-                <Link
-                  href="/login"
-                  className="block text-gray-700 py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Login
-                </Link>
-              ) : (
-                <button
-                  onClick={() => {
-                    logout();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="block text-red-500 py-2"
-                >
-                  Logout
-                </button>
-              )}
-
-
-              {categories.map((category: any) => (
-                <Link
-                  key={category.id}
-                  href={`/products?category=${category.slug}`}
-                  className="block text-gray-700 hover:text-gray-900 py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {category.name}
-                </Link>
-              ))}
+                Logout
+              </button>
 
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
 
+        </div>
+      </div>
     </nav>
   );
 }
