@@ -61,7 +61,7 @@ export default function LoginForm() {
 
         if (response.ok) {
           // store cookies
-          Cookies.set("token", data.token);
+          Cookies.set("access", data.token);
           Cookies.set("user", JSON.stringify(data.user));
 
           // update auth context
