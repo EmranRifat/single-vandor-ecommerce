@@ -5,10 +5,12 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, Spinner } from "@heroui/react";
+import { Button, Input, Spinner } from "@heroui/react";
 import { toast } from "react-toastify";
 import MaterialInput from "../common/MaterialInput";
 import { useRegInviteUser } from "@/hooks/useRegUser";
+import { EyeSlashIcon } from "../common/icons/EyeSlashIcon";
+import { EyeIcon } from "../common/icons/EyeIcon";
 
 interface FormValues {
   name: string;
@@ -22,12 +24,19 @@ export default function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tokenState = searchParams.get("token") || "";
-const [message, setMessage] = useState("");
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
+const toggleVisibility = () => setIsVisible(!isVisible); 
+
+
+
+
   const { mutate, data, error, isPending } = useRegInviteUser();
     
   console.log("muted data ..",data?.message)
   console.log("muted error ..",error?.message)
+
   const formik = useFormik<FormValues>({
     initialValues: {
       name: "",
@@ -88,21 +97,22 @@ const [message, setMessage] = useState("");
   return (
     <div className="p-4 max-w-md mx-auto">
 
-      <form onSubmit={formik.handleSubmit} className="space-y-4">
+    <form onSubmit={formik.handleSubmit} className="space-y-4">
 
         <motion.div
           initial={{ x: -300, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
         >
-          <MaterialInput
+          <Input
             id="name"
             name="name"
             label="Enter Your Name"
             type="text"
             value={formik.values.name}
-            error={formik.errors.name || ""}
-            whenChange={formik.handleChange}
-            whenBlur={formik.handleBlur}
+            errorMessage={formik.errors.name || ""}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            variant="bordered"
           />
         </motion.div>
 
@@ -110,15 +120,16 @@ const [message, setMessage] = useState("");
           initial={{ x: -300, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
         >
-          <MaterialInput
+          <Input
             id="email"
             name="email"
             type="email"
             label="Email"
             value={formik.values.email}
-            error={formik.errors.email || ""}
-            whenChange={formik.handleChange}
-            whenBlur={formik.handleBlur}
+            errorMessage={formik.errors.email || ""}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            variant="bordered"
           />
         </motion.div>
 
@@ -126,16 +137,30 @@ const [message, setMessage] = useState("");
           initial={{ x: -300, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
         >
-          <MaterialInput
+          <Input
             id="password"
             name="password"
-            type="password"
             label="Password"
             value={formik.values.password}
-            error={formik.errors.password || ""}
-            whenChange={formik.handleChange}
-            whenBlur={formik.handleBlur}
-            showPasswordToggle
+            errorMessage={formik.errors.password || ""}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            variant="bordered"
+           type={isVisible ? "text" : "password"}
+             endContent={
+                        <button
+                          aria-label="toggle password visibility"
+                          className="focus:outline-solid outline-transparent"
+                          type="button"
+                          onClick={toggleVisibility}
+                        >
+                          {isVisible ? (
+                            <EyeSlashIcon className="text-xl text-default-400 pointer-events-none" />
+                          ) : (
+                            <EyeIcon className="text-xl text-default-400 pointer-events-none" />
+                          )}
+                        </button>
+                      }
           />
         </motion.div>
 
@@ -143,16 +168,30 @@ const [message, setMessage] = useState("");
           initial={{ x: -300, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
         >
-          <MaterialInput
+          <Input
             id="confirmPassword"
             name="confirmPassword"
-            type="password"
             label="Confirm Password"
             value={formik.values.confirmPassword}
-            error={formik.errors.confirmPassword || ""}
-            whenChange={formik.handleChange}
-            whenBlur={formik.handleBlur}
-            showPasswordToggle
+            errorMessage={formik.errors.confirmPassword || ""}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            variant="bordered"
+           type={isVisible ? "text" : "password"}
+             endContent={
+                        <button
+                          aria-label="toggle password visibility"
+                          className="focus:outline-solid outline-transparent"
+                          type="button"
+                          onClick={toggleVisibility}
+                        >
+                          {isVisible ? (
+                            <EyeSlashIcon className="text-xl text-default-400 pointer-events-none" />
+                          ) : (
+                            <EyeIcon className="text-xl text-default-400 pointer-events-none" />
+                          )}
+                        </button>
+                      }
           />
         </motion.div>
 

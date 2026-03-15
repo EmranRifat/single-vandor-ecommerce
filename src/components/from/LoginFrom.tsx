@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@heroui/react";
+import { Button, Input } from "@heroui/react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useFormik } from "formik";
@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import MaterialInput from "@/src/components/common/MaterialInput";
 import Cookies from "js-cookie";
 import { useAuth } from "@/lib/auth-context";
+import { EyeSlashIcon } from "../common/icons/EyeSlashIcon";
+import { EyeIcon } from "../common/icons/EyeIcon";
 
 type UserLoginData = {
   email: string;
@@ -21,7 +23,8 @@ export default function LoginForm() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
+const [isVisible, setIsVisible] = useState(false);
+const toggleVisibility = () => setIsVisible(!isVisible); 
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -81,27 +84,27 @@ export default function LoginForm() {
   });
 
   return (
-    <form onSubmit={formik.handleSubmit} className="space-y-5">
-
+  <form onSubmit={formik.handleSubmit} className="space-y-5">
       {/* EMAIL */}
       <motion.div
         initial={{ x: -300, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.15 }}
       >
-        <MaterialInput
+        <Input
           id="email"
           name="email"
+          label="Enter Your Email"
           type="email"
-          label="Email"
           value={formik.values.email}
-          whenChange={formik.handleChange}
-          whenBlur={formik.handleBlur}
-          error={
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          errorMessage={
             formik.touched.email && formik.errors.email
               ? formik.errors.email
               : ""
           }
+          variant="bordered"
           isRequired
         />
       </motion.div>
@@ -112,39 +115,50 @@ export default function LoginForm() {
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.15, delay: 0.05 }}
       >
-        <MaterialInput
+        <Input
+          endContent={
+            <button
+              aria-label="toggle password visibility"
+              className="focus:outline-solid outline-transparent"
+              type="button"
+              onClick={toggleVisibility}
+            >
+              {isVisible ? (
+                <EyeSlashIcon className="text-xl text-default-400 pointer-events-none" />
+              ) : (
+                <EyeIcon className="text-xl text-default-400 pointer-events-none" />
+              )}
+            </button>
+          }
           id="password"
           name="password"
-          type="password"
-          label="Password"
+          label="Enter Your Password"
+          type={isVisible ? "text" : "password"}
           value={formik.values.password}
-          whenChange={formik.handleChange}
-          whenBlur={formik.handleBlur}
-          error={
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          errorMessage={
             formik.touched.password && formik.errors.password
               ? formik.errors.password
               : ""
           }
-          showPasswordToggle
+          variant="bordered"
           isRequired
         />
       </motion.div>
 
       {/* ERROR */}
-      {error && (
-        <p className="text-red-500 text-sm text-center">{error}</p>
-      )}
+      {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
       {/* BUTTON */}
       <Button
         type="submit"
         color="success"
-        className="w-full text-white py-6 text-md"
+        className="w-full text-white py-4 text-md"
         isLoading={loading}
       >
         Login
       </Button>
-
     </form>
   );
 }
