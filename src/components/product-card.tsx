@@ -24,7 +24,7 @@ export default function ProductCard({ product, index = 0 }: ProductCardProps) {
         <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300">
           <div className="relative h-64 bg-gray-100">
             <img
-              src={product.image_url}
+              src={product.image}
               alt={product.name}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />

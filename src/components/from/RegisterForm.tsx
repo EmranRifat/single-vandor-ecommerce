@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Input, Spinner } from "@heroui/react";
 import { toast } from "react-toastify";
 import MaterialInput from "../common/MaterialInput";
-import { useRegInviteUser } from "@/hooks/useRegUser";
+import { useRegInviteUser } from "@/lib/hooks/useRegUser";
 import { EyeSlashIcon } from "../common/icons/EyeSlashIcon";
 import { EyeIcon } from "../common/icons/EyeIcon";
 
@@ -26,16 +26,13 @@ export default function RegisterForm() {
   const tokenState = searchParams.get("token") || "";
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-    const [isVisible, setIsVisible] = useState(false);
-const toggleVisibility = () => setIsVisible(!isVisible); 
-
-
-
+  const [isVisible, setIsVisible] = useState(false);
+  const toggleVisibility = () => setIsVisible(!isVisible);
 
   const { mutate, data, error, isPending } = useRegInviteUser();
-    
-  console.log("muted data ..",data?.message)
-  console.log("muted error ..",error?.message)
+
+  console.log("muted data ..", data?.message);
+  console.log("muted error ..", error?.message);
 
   const formik = useFormik<FormValues>({
     initialValues: {
@@ -49,9 +46,7 @@ const toggleVisibility = () => setIsVisible(!isVisible);
     validationSchema: Yup.object({
       name: Yup.string().required("Name is required"),
 
-      email: Yup.string()
-        .email("Invalid email")
-        .required("Email is required"),
+      email: Yup.string().email("Invalid email").required("Email is required"),
 
       password: Yup.string()
         .min(4, "Password must be at least 4 characters")
@@ -62,7 +57,6 @@ const toggleVisibility = () => setIsVisible(!isVisible);
         .required("Confirm Password is required"),
     }),
 
-   
     onSubmit: (values) => {
       const formData = {
         ...values,
@@ -71,21 +65,21 @@ const toggleVisibility = () => setIsVisible(!isVisible);
 
       setLoading(true);
       mutate(formData, {
-       onSuccess: (response) => {
-  console.log("setPass Form submitted response ==>>:", response);
+        onSuccess: (response) => {
+          console.log("setPass Form submitted response ==>>:", response);
 
-  setLoading(false);
-  setMessage(response.message);
+          setLoading(false);
+          setMessage(response.message);
 
-  if (response.status === "success") {
-    toast.success(response.message);
-    router.push("/login");
-  }
+          if (response.status === "success") {
+            toast.success(response.message);
+            router.push("/login");
+          }
 
-  if (response.status === "failed") {
-    toast.error(response.message);
-  }
-},
+          if (response.status === "failed") {
+            toast.error(response.message);
+          }
+        },
         onError: (error: any) => {
           console.error("Form submission failed:", error);
           setLoading(false);
@@ -96,9 +90,7 @@ const toggleVisibility = () => setIsVisible(!isVisible);
 
   return (
     <div className="p-4 max-w-md mx-auto">
-
-    <form onSubmit={formik.handleSubmit} className="space-y-4">
-
+      <form onSubmit={formik.handleSubmit} className="space-y-4">
         <motion.div
           initial={{ x: -300, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
@@ -146,21 +138,21 @@ const toggleVisibility = () => setIsVisible(!isVisible);
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             variant="bordered"
-           type={isVisible ? "text" : "password"}
-             endContent={
-                        <button
-                          aria-label="toggle password visibility"
-                          className="focus:outline-solid outline-transparent"
-                          type="button"
-                          onClick={toggleVisibility}
-                        >
-                          {isVisible ? (
-                            <EyeSlashIcon className="text-xl text-default-400 pointer-events-none" />
-                          ) : (
-                            <EyeIcon className="text-xl text-default-400 pointer-events-none" />
-                          )}
-                        </button>
-                      }
+            type={isVisible ? "text" : "password"}
+            endContent={
+              <button
+                aria-label="toggle password visibility"
+                className="focus:outline-solid outline-transparent"
+                type="button"
+                onClick={toggleVisibility}
+              >
+                {isVisible ? (
+                  <EyeSlashIcon className="text-xl text-default-400 pointer-events-none" />
+                ) : (
+                  <EyeIcon className="text-xl text-default-400 pointer-events-none" />
+                )}
+              </button>
+            }
           />
         </motion.div>
 
@@ -177,57 +169,45 @@ const toggleVisibility = () => setIsVisible(!isVisible);
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             variant="bordered"
-           type={isVisible ? "text" : "password"}
-             endContent={
-                        <button
-                          aria-label="toggle password visibility"
-                          className="focus:outline-solid outline-transparent"
-                          type="button"
-                          onClick={toggleVisibility}
-                        >
-                          {isVisible ? (
-                            <EyeSlashIcon className="text-xl text-default-400 pointer-events-none" />
-                          ) : (
-                            <EyeIcon className="text-xl text-default-400 pointer-events-none" />
-                          )}
-                        </button>
-                      }
+            type={isVisible ? "text" : "password"}
+            endContent={
+              <button
+                aria-label="toggle password visibility"
+                className="focus:outline-solid outline-transparent"
+                type="button"
+                onClick={toggleVisibility}
+              >
+                {isVisible ? (
+                  <EyeSlashIcon className="text-xl text-default-400 pointer-events-none" />
+                ) : (
+                  <EyeIcon className="text-xl text-default-400 pointer-events-none" />
+                )}
+              </button>
+            }
           />
         </motion.div>
 
         <div className="flex justify-between mt-6">
-          
-          <Button
-            type="button"
-            variant="ghost"
-            onPress={() => router.back()}
-          >
+          <Button type="button" variant="ghost" onPress={() => router.back()}>
             Back
           </Button>
 
-         <Button
-            type="submit"
-            color="primary"
-            isLoading={isPending}
-            >
+          <Button type="submit" color="primary" isLoading={isPending}>
             Register
-        </Button>
+          </Button>
         </div>
-    {/* SUCCESS MESSAGE */}
+        {/* SUCCESS MESSAGE */}
         {data?.message && (
-        <p className="text-green-500 text-center text-sm">
-            {data.message}
-        </p>
+          <p className="text-green-500 text-center text-sm">{data.message}</p>
         )}
 
         {/* ERROR MESSAGE */}
         {error && (
-        <p className="text-red-500 text-center text-sm">
+          <p className="text-red-500 text-center text-sm">
             {(error as Error).message}
-        </p>
+          </p>
         )}
       </form>
-
     </div>
   );
 }

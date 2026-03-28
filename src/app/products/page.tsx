@@ -7,15 +7,32 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import ProductCard from '@/src/components/product-card';
-
+import { useProductList } from '@/lib/http/product/useGetProducts';
+import Cookies from "js-cookie";
+ 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const categorySlug = searchParams.get('category');
 
-  const { data: products = [], isLoading } = useQuery({
-    queryKey: ['products', categorySlug],
-    queryFn: () => getProducts(categorySlug || undefined)
+  // const { data: products = [], isLoading } = useQuery({
+  //   queryKey: ['products', categorySlug],
+  //   queryFn: () => getProducts(categorySlug || undefined)
+  // });
+
+const token = Cookies.get("access") || "";
+
+
+
+    const { data, isLoading, error } = useProductList({
+    access: token,
+    page: 1,
+    limit: 10,
   });
+
+  const products = data?.data || [];
+  console.log("get data products..",data)
+
+
 
   const { data: categories = [] } = useQuery({
     queryKey: ['categories'],
