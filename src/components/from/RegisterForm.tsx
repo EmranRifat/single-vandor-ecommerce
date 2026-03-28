@@ -7,7 +7,6 @@ import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Input, Spinner } from "@heroui/react";
 import { toast } from "react-toastify";
-import MaterialInput from "../common/MaterialInput";
 import { useRegInviteUser } from "@/hooks/useRegUser";
 import { EyeIcon } from "../common/icons/EyeIcon";
 import { EyeSlashIcon } from "../common/icons/EyeSlashIcon";
