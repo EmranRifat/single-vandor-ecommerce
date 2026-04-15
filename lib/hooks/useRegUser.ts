@@ -1,9 +1,7 @@
 import { NewUser, RegUserResponse } from "@/lib/types";
 import { useMutation } from "@tanstack/react-query";
 
-
 const registerUser = async (newUser: NewUser): Promise<RegUserResponse> => {
-
   const formData = new FormData();
   formData.append("email", newUser.email);
   formData.append("name", newUser.name);
@@ -22,10 +20,10 @@ const registerUser = async (newUser: NewUser): Promise<RegUserResponse> => {
   });
 
   const data = await response.json();
-  console.log("reg res data ",data)
+  console.log("reg res data fetch ..> ", data);
 
   if (!response.ok) {
-    throw new Error(data.error || "Registration failed");
+    throw new Error(data?.message || data?.error || "Registration failed");
   }
 
   return data;

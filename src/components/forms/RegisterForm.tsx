@@ -31,8 +31,8 @@ export default function RegisterForm() {
 
   const { mutate, data, error, isPending } = useRegInviteUser();
 
-  console.log("muted data ..", data?.message);
-  console.log("muted error ..", error?.message);
+  console.log("Reg Form submitted  ..", data);
+  console.log("Reg Form submitted error ..", error);
 
   const formik = useFormik<FormValues>({
     initialValues: {
@@ -66,7 +66,7 @@ export default function RegisterForm() {
       setLoading(true);
       mutate(formData, {
         onSuccess: (response) => {
-          console.log("setPass Form submitted response ==>>:", response);
+          console.log("Reg Form submitted response ==>>:", response);
 
           setLoading(false);
           setMessage(response.message);
@@ -76,7 +76,7 @@ export default function RegisterForm() {
             router.push("/login");
           }
 
-          if (response.status === "failed") {
+          if (response.status === "error") {
             toast.error(response.message);
           }
         },

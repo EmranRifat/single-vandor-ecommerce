@@ -26,16 +26,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const storedUser = Cookies.get("user");
+    const storedUser = Cookies?.get("user");
 
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
   }, []);
 
-
   const logout = () => {
-    Cookies.remove("access");
+    Cookies.remove("token");
     Cookies.remove("user");
     setUser(null);
   };

@@ -34,7 +34,7 @@ export interface ProductListResponse {
 }
 
 export interface ProductListPayload {
-  access?: string;
+  token?: string;
   page?: number;
   limit?: number;
   q?: string;
@@ -51,10 +51,9 @@ export const defaultProductListResponse: ProductListResponse = {
   },
 };
 
-
-
-const fetchProductList = async ( payload: ProductListPayload ): Promise<ProductListResponse> => {
-
+const fetchProductList = async (
+  payload: ProductListPayload,
+): Promise<ProductListResponse> => {
   const params = new URLSearchParams();
 
   if (payload.page) params.append("page", String(payload.page));
@@ -62,18 +61,17 @@ const fetchProductList = async ( payload: ProductListPayload ): Promise<ProductL
   if (payload.q) params.append("q", payload.q);
 
   const url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/product?${params.toString()}`;
- 
-  console.log("acessss-->",payload.access)
-  
+
+  console.log("acessss-->", payload.token);
+
   try {
-      const response = await fetch(url, {
+    const response = await fetch(url, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${payload.access}`,
+        Authorization: `Bearer ${payload.token}`,
         Accept: "application/json",
         "Content-Type": "application/json",
       },
-       
     });
 
     if (!response.ok) {
@@ -88,17 +86,21 @@ const fetchProductList = async ( payload: ProductListPayload ): Promise<ProductL
     } else {
       return defaultProductListResponse;
     }
-
   } catch (err) {
     console.error("Fetch failed:", err);
     throw err;
   }
 };
 
-
 export const useProductList = (payload: ProductListPayload) => {
   return useQuery<ProductListResponse>({
-    queryKey: ["productList", payload.page, payload.limit, payload.q, payload.access],
+    queryKey: [
+      "productList",
+      payload.page,
+      payload.limit,
+      payload.q,
+      payload.token,
+    ],
     queryFn: () => fetchProductList(payload),
   });
 };

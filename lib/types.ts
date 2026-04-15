@@ -9,6 +9,7 @@ export interface NewUser {
 export interface RegUserResponse {
   status: string;
   status_code: number;
+  success: boolean;
   user: object;
   error: string;
   message: string;

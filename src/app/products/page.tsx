@@ -1,45 +1,41 @@
-'use client';
+"use client";
 
-import { useSearchParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import { getProducts, getCategories } from '@/lib/queries';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
-import ProductCard from '@/src/components/product-card';
-import { useProductList } from '@/lib/http/product/useGetProducts';
+import { useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { getProducts, getCategories } from "@/lib/queries";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+import ProductCard from "@/src/components/product-card";
+import { useProductList } from "@/lib/http/product/useGetProducts";
 import Cookies from "js-cookie";
- 
+
 export default function ProductsPage() {
   const searchParams = useSearchParams();
-  const categorySlug = searchParams.get('category');
+  const categorySlug = searchParams.get("category");
 
   // const { data: products = [], isLoading } = useQuery({
   //   queryKey: ['products', categorySlug],
   //   queryFn: () => getProducts(categorySlug || undefined)
   // });
 
-const token = Cookies.get("access") || "";
+  const token = Cookies.get("token") || "";
 
-
-
-    const { data, isLoading, error } = useProductList({
-    access: token,
+  const { data, isLoading, error } = useProductList({
+    token: token,
     page: 1,
     limit: 10,
   });
 
   const products = data?.data || [];
-  console.log("get data products..",data)
-
-
+  console.log("get data products..", data);
 
   const { data: categories = [] } = useQuery({
-    queryKey: ['categories'],
-    queryFn: getCategories
+    queryKey: ["categories"],
+    queryFn: getCategories,
   });
 
-  const currentCategory = categories.find(c => c.slug === categorySlug);
+  const currentCategory = categories.find((c) => c.slug === categorySlug);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -50,18 +46,22 @@ const token = Cookies.get("access") || "";
           className="mb-12"
         >
           <div className="flex items-center gap-2 text-gray-600 mb-4">
-            <Link href="/" className="hover:text-gray-900 transition-colors">Home</Link>
+            <Link href="/" className="hover:text-gray-900 transition-colors">
+              Home
+            </Link>
             <ChevronRight className="w-4 h-4" />
             <span className="text-gray-900 font-semibold">
-              {currentCategory ? currentCategory.name : 'All Products'}
+              {currentCategory ? currentCategory.name : "All Products"}
             </span>
           </div>
 
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            {currentCategory ? currentCategory.name : 'All Products'}
+            {currentCategory ? currentCategory.name : "All Products"}
           </h1>
           {currentCategory && (
-            <p className="text-gray-600 text-lg">{currentCategory.description}</p>
+            <p className="text-gray-600 text-lg">
+              {currentCategory.description}
+            </p>
           )}
         </motion.div>
 
@@ -72,7 +72,9 @@ const token = Cookies.get("access") || "";
             className="lg:col-span-1"
           >
             <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Categories</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">
+                Categories
+              </h2>
 
               <div className="space-y-2">
                 <Link href="/products">
@@ -80,8 +82,8 @@ const token = Cookies.get("access") || "";
                     whileHover={{ x: 4 }}
                     className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
                       !categorySlug
-                        ? 'bg-gray-900 text-white'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? "bg-gray-900 text-white"
+                        : "text-gray-700 hover:bg-gray-100"
                     }`}
                   >
                     All Products
@@ -89,13 +91,16 @@ const token = Cookies.get("access") || "";
                 </Link>
 
                 {categories.map((category) => (
-                  <Link key={category.id} href={`/products?category=${category.slug}`}>
+                  <Link
+                    key={category.id}
+                    href={`/products?category=${category.slug}`}
+                  >
                     <motion.button
                       whileHover={{ x: 4 }}
                       className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
                         categorySlug === category.slug
-                          ? 'bg-gray-900 text-white'
-                          : 'text-gray-700 hover:bg-gray-100'
+                          ? "bg-gray-900 text-white"
+                          : "text-gray-700 hover:bg-gray-100"
                       }`}
                     >
                       {category.name}
@@ -114,18 +119,27 @@ const token = Cookies.get("access") || "";
             {isLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-lg shadow-sm h-96 animate-pulse" />
+                  <div
+                    key={i}
+                    className="bg-white rounded-lg shadow-sm h-96 animate-pulse"
+                  />
                 ))}
               </div>
             ) : products.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {products.map((product, index) => (
-                  <ProductCard key={product.id} product={product} index={index} />
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    index={index}
+                  />
                 ))}
               </div>
             ) : (
               <div className="text-center py-20">
-                <p className="text-gray-500 text-lg">No products found in this category.</p>
+                <p className="text-gray-500 text-lg">
+                  No products found in this category.
+                </p>
               </div>
             )}
           </motion.div>

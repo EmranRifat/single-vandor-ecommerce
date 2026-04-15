@@ -23,8 +23,10 @@ export default function LoginForm() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-const [isVisible, setIsVisible] = useState(false);
-const toggleVisibility = () => setIsVisible(!isVisible); 
+  const [isVisible, setIsVisible] = useState(false);
+  const toggleVisibility = () => setIsVisible(!isVisible); 
+  
+  
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -39,48 +41,58 @@ const toggleVisibility = () => setIsVisible(!isVisible);
       password: Yup.string().required("Password is required"),
     }),
 
-    onSubmit: async (values) => {
-      setLoading(true);
-      setError("");
+   onSubmit: async (values) => {
+  setLoading(true);
+  setError("");
 
-      try {
-        const payload: UserLoginData = {
-          email: values.email,
-          password: values.password,
-        };
+  try {
+    const payload: UserLoginData = {
+      email: values.email,
+      password: values.password,
+    };
 
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/auth/login`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-          }
-        );
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/auth/login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
 
-        const data = await response.json();
+    const data = await response.json();
+    console.log("Login response data ..", data);
 
-        if (response.ok) {
-          // store cookies
-          Cookies.set("access", data.token);
-          Cookies.set("user", JSON.stringify(data.user));
+    if (response.ok && data.status === "success") {
+      const token = data?.data?.token;
+      const user = data?.data?.user;
 
-          // update auth context
-          setUser(data.user);
-
-          router.push("/products");
-        } else {
-          setError(data.error || "Login failed");
-        }
-      } catch (err) {
-        console.error(err);
-        setError("Something went wrong");
+      if (!token || !user) {
+        setError("Invalid login response");
+        return;
       }
 
-      setLoading(false);
-    },
+      // store cookies
+      Cookies.set("token", token);
+      Cookies.set("user", JSON.stringify(user));
+
+      // update auth context
+      setUser(user);
+
+      router.push("/products");
+    } else {
+      setError(data.message || data.error || "Login failed");
+    }
+  } catch (err) {
+    console.error(err);
+    setError("Something went wrong");
+  } finally {
+    setLoading(false);
+  }
+},
   });
 
   return (
