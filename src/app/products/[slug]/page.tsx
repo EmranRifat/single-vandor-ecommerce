@@ -18,10 +18,10 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const dispatch = useDispatch();
 
-  const { data: product, isLoading } = useQuery({
-    queryKey: ['product', slug],
-    queryFn: () => getProduct(slug)
-  });
+  // const { data: product, isLoading } = useQuery({
+  //   queryKey: ['product', slug],
+  //   queryFn: () => getProduct(slug)
+  // });
 
   const handleAddToCart = () => {
     if (product) {

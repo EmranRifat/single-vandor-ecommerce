@@ -41,6 +41,11 @@ export default function LoginForm() {
       password: Yup.string().required("Password is required"),
     }),
 
+
+
+
+
+
    onSubmit: async (values) => {
   setLoading(true);
   setError("");
@@ -67,19 +72,21 @@ export default function LoginForm() {
     console.log("Login response data ..", data);
 
     if (response.ok && data.status === "success") {
-      const token = data?.data?.token;
-      const user = data?.data?.user;
+      const token = data?.token;
+      const user = data?.user;
 
-      if (!token || !user) {
-        setError("Invalid login response");
-        return;
-      }
+      // if (!token || !user) {
+      //   setError("Invalid login response");
+      //   return;
+      // }
+
 
       // store cookies
       Cookies.set("token", token);
       Cookies.set("user", JSON.stringify(user));
+      Cookies.set("role", JSON.stringify( user?.role));
 
-      // update auth context
+      // update auth co  ntext
       setUser(user);
 
       router.push("/products");

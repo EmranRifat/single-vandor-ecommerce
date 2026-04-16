@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { getProducts, getCategories } from "@/lib/queries";
+import { getCategories } from "@/lib/queries";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
@@ -12,19 +12,15 @@ import Cookies from "js-cookie";
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
-  const categorySlug = searchParams.get("category");
-
-  // const { data: products = [], isLoading } = useQuery({
-  //   queryKey: ['products', categorySlug],
-  //   queryFn: () => getProducts(categorySlug || undefined)
-  // });
+  const categoryId = searchParams.get("category") || "";
 
   const token = Cookies.get("token") || "";
 
   const { data, isLoading, error } = useProductList({
-    token: token,
+    token,
     page: 1,
     limit: 10,
+    category: categoryId || undefined,
   });
 
   const products = data?.data || [];
@@ -35,7 +31,7 @@ export default function ProductsPage() {
     queryFn: getCategories,
   });
 
-  const currentCategory = categories.find((c) => c.slug === categorySlug);
+  const currentCategory = categories.find((c: any) => c.id === categoryId);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -58,11 +54,6 @@ export default function ProductsPage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             {currentCategory ? currentCategory.name : "All Products"}
           </h1>
-          {currentCategory && (
-            <p className="text-gray-600 text-lg">
-              {currentCategory.description}
-            </p>
-          )}
         </motion.div>
 
         <div className="grid lg:grid-cols-4 gap-8">
@@ -81,7 +72,7 @@ export default function ProductsPage() {
                   <motion.button
                     whileHover={{ x: 4 }}
                     className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                      !categorySlug
+                      !categoryId
                         ? "bg-gray-900 text-white"
                         : "text-gray-700 hover:bg-gray-100"
                     }`}
@@ -90,15 +81,15 @@ export default function ProductsPage() {
                   </motion.button>
                 </Link>
 
-                {categories.map((category) => (
+                {categories.map((category: any) => (
                   <Link
                     key={category.id}
-                    href={`/products?category=${category.slug}`}
+                    href={`/products?category=${category.id}`}
                   >
                     <motion.button
                       whileHover={{ x: 4 }}
                       className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                        categorySlug === category.slug
+                        categoryId === category.id
                           ? "bg-gray-900 text-white"
                           : "text-gray-700 hover:bg-gray-100"
                       }`}
@@ -125,9 +116,15 @@ export default function ProductsPage() {
                   />
                 ))}
               </div>
+            ) : error ? (
+              <div className="text-center py-20">
+                <p className="text-red-500 text-lg">
+                  Failed to load products.
+                </p>
+              </div>
             ) : products.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {products.map((product, index) => (
+                {products.map((product: any, index: number) => (
                   <ProductCard
                     key={product.id}
                     product={product}

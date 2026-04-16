@@ -1,46 +1,8 @@
+import { ProductListPayload, ProductListResponse } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 
-export interface ProductCategory {
-  id: string;
-  name: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Product {
-  id: string;
-  product_category_id: string;
-  name: string;
-  price: number;
-  image: string;
-  description: string;
-  manufacturer: string;
-  created_at: string;
-  updated_at: string;
-  product_category: ProductCategory;
-}
-
-export interface ProductMeta {
-  limit: number;
-  page: number;
-  total: number;
-  total_pages: number;
-}
-
-export interface ProductListResponse {
-  success: boolean;
-  data: Product[];
-  meta: ProductMeta;
-}
-
-export interface ProductListPayload {
-  token?: string;
-  page?: number;
-  limit?: number;
-  q?: string;
-}
-
 export const defaultProductListResponse: ProductListResponse = {
+  message: "Failed to fetch products",
   success: false,
   data: [],
   meta: {
@@ -51,45 +13,49 @@ export const defaultProductListResponse: ProductListResponse = {
   },
 };
 
-const fetchProductList = async (
-  payload: ProductListPayload,
-): Promise<ProductListResponse> => {
+const fetchProductList = async (payload: ProductListPayload): Promise<ProductListResponse> => {
+  
   const params = new URLSearchParams();
-
   if (payload.page) params.append("page", String(payload.page));
   if (payload.limit) params.append("limit", String(payload.limit));
   if (payload.q) params.append("q", payload.q);
+  if (payload.category) params.append("category_id", payload.category);
 
   const url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/product?${params.toString()}`;
 
-  console.log("acessss-->", payload.token);
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      ...(payload.token
+        ? { Authorization: `Bearer ${payload.token}` }
+        : {}),
+    },
+    cache: "no-store",
+  });
 
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${payload.token}`,
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-    });
+  const res = await response.json();
+  console.log("product list response =>", res);
 
-    if (!response.ok) {
-      throw new Error(`Fetch error: ${response.status}`);
-    }
-
-    const res: ProductListResponse = await response.json();
-    console.log("res json.....", res);
-
-    if (res.success) {
-      return res;
-    } else {
-      return defaultProductListResponse;
-    }
-  } catch (err) {
-    console.error("Fetch failed:", err);
-    throw err;
+  if (!response.ok) {
+    throw new Error(res.message || res.error || `Fetch error: ${response.status}`);
   }
+
+  if (res.status === "success") {
+    return {
+      message: "Products fetched successfully",
+      success: true,
+      data: res.data || [],
+      meta: res.meta || {
+        limit: payload.limit || 10,
+        page: payload.page || 1,
+        total: res.data?.length || 0,
+        total_pages: 1,
+      },
+    };
+  }
+
+  return defaultProductListResponse;
 };
 
 export const useProductList = (payload: ProductListPayload) => {
@@ -99,6 +65,7 @@ export const useProductList = (payload: ProductListPayload) => {
       payload.page,
       payload.limit,
       payload.q,
+      payload.category,
       payload.token,
     ],
     queryFn: () => fetchProductList(payload),
