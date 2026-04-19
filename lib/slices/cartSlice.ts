@@ -1,11 +1,11 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { ProductWithCategory } from '../database.types';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { Product } from "../types";
 
 export interface CartItem {
   id: string;
   productId: string;
   quantity: number;
-  product: ProductWithCategory;
+  product: Product;
 }
 
 interface CartState {
@@ -20,13 +20,28 @@ const initialState: CartState = {
   totalPrice: 0,
 };
 
+const calculateTotals = (items: CartItem[]) => {
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalPrice = items.reduce(
+    (sum, item) => sum + item.product.price * item.quantity,
+    0
+  );
+
+  return { totalItems, totalPrice };
+};
+
 const cartSlice = createSlice({
-  name: 'cart',
+  name: "cart",
   initialState,
   reducers: {
-    addToCart: (state, action: PayloadAction<{ product: ProductWithCategory; quantity: number }>) => {
+    addToCart: (
+      state,
+      action: PayloadAction<{ product: Product; quantity: number }>
+    ) => {
       const { product, quantity } = action.payload;
-      const existingItem = state.items.find((item) => item.productId === product.id);
+      const existingItem = state.items.find(
+        (item) => item.productId === product.id
+      );
 
       if (existingItem) {
         existingItem.quantity += quantity;
@@ -39,39 +54,41 @@ const cartSlice = createSlice({
         });
       }
 
-      state.totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
-      state.totalPrice = state.items.reduce(
-        (sum, item) => sum + item.product.price * item.quantity,
-        0
-      );
+      const totals = calculateTotals(state.items);
+      state.totalItems = totals.totalItems;
+      state.totalPrice = totals.totalPrice;
     },
 
     removeFromCart: (state, action: PayloadAction<string>) => {
-      state.items = state.items.filter((item) => item.productId !== action.payload);
-      state.totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
-      state.totalPrice = state.items.reduce(
-        (sum, item) => sum + item.product.price * item.quantity,
-        0
+      state.items = state.items.filter(
+        (item) => item.productId !== action.payload
       );
+
+      const totals = calculateTotals(state.items);
+      state.totalItems = totals.totalItems;
+      state.totalPrice = totals.totalPrice;
     },
 
-    updateQuantity: (state, action: PayloadAction<{ productId: string; quantity: number }>) => {
+    updateQuantity: (
+      state,
+      action: PayloadAction<{ productId: string; quantity: number }>
+    ) => {
       const { productId, quantity } = action.payload;
       const item = state.items.find((item) => item.productId === productId);
 
       if (item) {
         if (quantity <= 0) {
-          state.items = state.items.filter((item) => item.productId !== productId);
+          state.items = state.items.filter(
+            (cartItem) => cartItem.productId !== productId
+          );
         } else {
           item.quantity = quantity;
         }
       }
 
-      state.totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
-      state.totalPrice = state.items.reduce(
-        (sum, item) => sum + item.product.price * item.quantity,
-        0
-      );
+      const totals = calculateTotals(state.items);
+      state.totalItems = totals.totalItems;
+      state.totalPrice = totals.totalPrice;
     },
 
     clearCart: (state) => {
@@ -82,14 +99,15 @@ const cartSlice = createSlice({
 
     loadCart: (state, action: PayloadAction<CartItem[]>) => {
       state.items = action.payload;
-      state.totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
-      state.totalPrice = state.items.reduce(
-        (sum, item) => sum + item.product.price * item.quantity,
-        0
-      );
+
+      const totals = calculateTotals(state.items);
+      state.totalItems = totals.totalItems;
+      state.totalPrice = totals.totalPrice;
     },
   },
 });
 
-export const { addToCart, removeFromCart, updateQuantity, clearCart, loadCart } = cartSlice.actions;
+export const { addToCart, removeFromCart, updateQuantity, clearCart, loadCart } =
+  cartSlice.actions;
+
 export default cartSlice.reducer;

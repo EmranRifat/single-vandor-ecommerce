@@ -71,11 +71,11 @@ export default function CartPage() {
                     className="flex gap-6 p-6 border-b last:border-b-0"
                   >
                     <Link
-                      href={`/products/${item.product.slug}`}
+                      href={`/products/${item.product.slug || item.product.id}`}
                       className="shrink-0 w-32 h-32 bg-gray-100 rounded-lg overflow-hidden"
                     >
                       <img
-                        src={item.product.image_url}
+                        src={item.product.image}
                         alt={item.product.name}
                         className="w-full h-full object-cover hover:scale-105 transition-transform"
                       />
@@ -83,7 +83,7 @@ export default function CartPage() {
 
                     <div className="flex-1">
                       <Link
-                        href={`/products/${item.product.slug}`}
+                        href={`/products/${item.product.slug || item.product.id}`}
                         className="text-xl font-semibold text-gray-900 hover:text-gray-700 transition-colors mb-2 block"
                       >
                         {item.product.name}

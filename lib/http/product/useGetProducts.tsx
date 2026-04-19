@@ -1,29 +1,27 @@
-import { ProductListPayload, ProductListResponse } from "@/lib/types";
+import { ItemListResponse, ItemListPayload } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 
-export const defaultProductListResponse: ProductListResponse = {
-  message: "Failed to fetch products",
-  success: false,
-  data: [],
-  meta: {
-    limit: 10,
-    page: 1,
-    total: 0,
-    total_pages: 0,
-  },
-};
+const fetchProductList = async (
+  payload: ItemListPayload
+): Promise<ItemListResponse> => {
+  const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
-const fetchProductList = async (payload: ProductListPayload): Promise<ProductListResponse> => {
-  
-  const params = new URLSearchParams();
-  if (payload.page) params.append("page", String(payload.page));
-  if (payload.limit) params.append("limit", String(payload.limit));
-  if (payload.q) params.append("q", payload.q);
-  if (payload.category) params.append("category_id", payload.category);
+  const url = new URL("/api/listings", baseUrl);
 
-  const url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/product?${params.toString()}`;
+  if (payload.page != null) {
+    url.searchParams.append("page", String(payload.page));
+  }
+  if (payload.limit != null) {
+    url.searchParams.append("limit", String(payload.limit));
+  }
+  if (payload.q) {
+    url.searchParams.append("q", payload.q);
+  }
+  if (payload.category) {
+    url.searchParams.append("category", String(payload.category));
+  }
 
-  const response = await fetch(url, {
+  const response = await fetch(url.toString(), {
     method: "GET",
     headers: {
       Accept: "application/json",
@@ -34,40 +32,31 @@ const fetchProductList = async (payload: ProductListPayload): Promise<ProductLis
     cache: "no-store",
   });
 
+  console.log("response.status =>", response.status);
+  console.log("response.ok =>", response.ok);
+
   const res = await response.json();
-  console.log("product list response =>", res);
+  console.log("Fetched items List Data =>", res);
 
   if (!response.ok) {
-    throw new Error(res.message || res.error || `Fetch error: ${response.status}`);
+    throw new Error(res?.message || `Request failed: ${response.status}`);
   }
 
-  if (res.status === "success") {
-    return {
-      message: "Products fetched successfully",
-      success: true,
-      data: res.data || [],
-      meta: res.meta || {
-        limit: payload.limit || 10,
-        page: payload.page || 1,
-        total: res.data?.length || 0,
-        total_pages: 1,
-      },
-    };
-  }
-
-  return defaultProductListResponse;
+  return {
+    message: res?.message || "Listings fetched successfully",
+    success: res?.success ?? false,
+    data: Array.isArray(res?.listings) ? res.listings : [],
+    meta: {
+      limit: res?.pagination?.limit ?? payload.limit ?? 10,
+      page: res?.pagination?.page ?? payload.page ?? 1,
+      total_pages: res?.pagination?.totalPages ?? 0,
+    },
+  };
 };
 
-export const useProductList = (payload: ProductListPayload) => {
-  return useQuery<ProductListResponse>({
-    queryKey: [
-      "productList",
-      payload.page,
-      payload.limit,
-      payload.q,
-      payload.category,
-      payload.token,
-    ],
+export const useProductList = (payload: ItemListPayload) => {
+  return useQuery<ItemListResponse, Error>({
+    queryKey: ["productList", payload],
     queryFn: () => fetchProductList(payload),
   });
 };

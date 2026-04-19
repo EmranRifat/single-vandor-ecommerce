@@ -37,12 +37,6 @@ export type ApiResponse<T> = {
   error?: string;
 };
 
-export type Category = {
-  id: string;
-  name: string;
-  created_at: string;
-  updated_at: string;
-};
 
 export type ProductCategory = {
   id: string;
@@ -51,37 +45,7 @@ export type ProductCategory = {
   updated_at: string;
 };
 
-export type Product = {
-  id: string;
-  product_category_id: string;
-  name: string;
-  price: number;
-  image: string;
-  description: string;
-  manufacturer: string;
-  created_at: string;
-  updated_at: string;
-  product_category?: ProductCategory;
-};
-// export interface ProductCategory {
-//   id: string;
-//   name: string;
-//   created_at: string;
-//   updated_at: string;
-// }
 
-// export interface Product {
-//   id: string;
-//   product_category_id: string;
-//   name: string;
-//   price: number;
-//   image: string;
-//   description: string;
-//   manufacturer: string;
-//   created_at: string;
-//   updated_at: string;
-//   product_category: ProductCategory;
-// }
 
 export interface ProductMeta {
   limit: number;
@@ -90,17 +54,77 @@ export interface ProductMeta {
   total_pages: number;
 }
 
-export interface ProductListResponse {
-  message: string;
-  success: boolean;
-  data: Product[];
-  meta: ProductMeta;
+
+export interface ItemListPayload {
+  page?: number;
+  limit?: number;
+  category?: string;
+  token?: string;
 }
 
-export type ProductListPayload = {
+
+
+
+export type Category = {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export interface ListingData {
+  id: string
+  title: string
+  description: string
+  price_per_night: number
+  city: string
+  country: string
+  image: string
+  category: string
+  rating: number
+  reviews_count: number
+  host_name: string
+  is_superhost: boolean
+  created_at: string
+  updated_at: string
+}
+
+
+
+
+
+export interface ItemListPayload {
   page?: number;
   limit?: number;
   q?: string;
-  token?: string;
   category?: string;
-};
+  token?: string;
+}
+
+export interface ProductItem {
+  id: string;
+  title: string;
+  description: string;
+  price_per_night: number;
+  city: string;
+  country: string;
+  image: string;
+  category: string;
+  rating: number;
+  reviews_count: number;
+  host_name: string;
+  is_superhost: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ItemListResponse {
+  message: string;
+  success: boolean;
+  data: ListingData[];
+  meta: {
+    limit: number;
+    page: number;
+    total_pages: number;
+  };
+}

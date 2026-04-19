@@ -6,32 +6,33 @@ import { getCategories } from "@/lib/queries";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import ProductCard from "@/src/components/product-card";
 import { useProductList } from "@/lib/http/product/useGetProducts";
 import Cookies from "js-cookie";
+import { Category, Item } from "@/src/types/items";
+import ItemCard from "@/src/components/itemsCard";
+import { ItemListPayload } from "@/lib/types";
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const categoryId = searchParams.get("category") || "";
-
   const token = Cookies.get("token") || "";
 
-  const { data, isLoading, error } = useProductList({
-    token,
+  const payload: ItemListPayload = {
     page: 1,
     limit: 10,
+    token,
     category: categoryId || undefined,
-  });
+  };
 
-  const products = data?.data || [];
-  console.log("get data products..", data);
+  const { data, isLoading, error } = useProductList(payload);
+  const items = data?.data || [];
 
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
   });
 
-  const currentCategory = categories.find((c: any) => c.id === categoryId);
+  const currentCategory = categories.find((c: Category) => c.id === categoryId);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -56,7 +57,7 @@ export default function ProductsPage() {
           </h1>
         </motion.div>
 
-        <div className="grid lg:grid-cols-4 gap-8">
+        <div className="grid gap-8 lg:grid-cols-4">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -77,11 +78,11 @@ export default function ProductsPage() {
                         : "text-gray-700 hover:bg-gray-100"
                     }`}
                   >
-                    All Products
+                    New Arrivals
                   </motion.button>
                 </Link>
 
-                {categories.map((category: any) => (
+                {categories.map((category: Category) => (
                   <Link
                     key={category.id}
                     href={`/products?category=${category.id}`}
@@ -108,34 +109,28 @@ export default function ProductsPage() {
             className="lg:col-span-3"
           >
             {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {[...Array(6)].map((_, i) => (
                   <div
                     key={i}
-                    className="bg-white rounded-lg shadow-sm h-96 animate-pulse"
+                    className="h-[420px] rounded-lg bg-white shadow-sm animate-pulse"
                   />
                 ))}
               </div>
             ) : error ? (
               <div className="text-center py-20">
-                <p className="text-red-500 text-lg">
-                  Failed to load products.
-                </p>
+                <p className="text-red-500 text-lg">Failed to load data.</p>
               </div>
-            ) : products.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {products.map((product: any, index: number) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    index={index}
-                  />
+            ) : items.length > 0 ? (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                {items.map((item: Item, index: number) => (
+                  <ItemCard key={item.id} item={item} index={index} />
                 ))}
               </div>
             ) : (
               <div className="text-center py-20">
                 <p className="text-gray-500 text-lg">
-                  No products found in this category.
+                  No data found in this category.
                 </p>
               </div>
             )}

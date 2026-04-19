@@ -90,6 +90,7 @@ export type OrderItem = Database['public']['Tables']['order_items']['Row'];
 
 export interface ProductWithCategory extends Product {
   categories?: Category;
+  
 }
 
 export interface CartItemWithProduct extends CartItem {

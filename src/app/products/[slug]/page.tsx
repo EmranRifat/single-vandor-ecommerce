@@ -1,32 +1,32 @@
-'use client';
+"use client";
 
-import { useParams, useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import { getProduct } from '@/lib/queries';
-import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { ShoppingCart, Heart, Truck, Shield, ArrowLeft } from 'lucide-react';
-import { useDispatch } from 'react-redux';
-import { addToCart } from '@/lib/slices/cartSlice';
-import Link from 'next/link';
+import { useParams, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { getProduct } from "@/lib/queries";
+import { motion } from "framer-motion";
+import { useState } from "react";
+import { ShoppingCart, Heart, Truck, Shield, ArrowLeft } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { addToCart } from "@/lib/slices/cartSlice";
+import Link from "next/link";
 
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const slug = params.slug as string;
+  const productId = params.slug as string;
   const [quantity, setQuantity] = useState(1);
-  const [selectedImage, setSelectedImage] = useState(0);
   const dispatch = useDispatch();
 
-  // const { data: product, isLoading } = useQuery({
-  //   queryKey: ['product', slug],
-  //   queryFn: () => getProduct(slug)
-  // });
+  const { data: product, isLoading } = useQuery({
+    queryKey: ["product", productId],
+    queryFn: () => getProduct(productId),
+    enabled: !!productId,
+  });
 
   const handleAddToCart = () => {
     if (product) {
       dispatch(addToCart({ product, quantity }));
-      router.push('/cart');
+      router.push("/cart");
     }
   };
 
@@ -51,10 +51,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  const images = product.images && product.images.length > 0 ? product.images : [product.image_url];
-  const discount = product.compare_at_price
-    ? Math.round(((product.compare_at_price - product.price) / product.compare_at_price) * 100)
-    : 0;
+  const image = product.image || "/placeholder.png";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -80,40 +77,13 @@ export default function ProductDetailPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-4 aspect-square">
+              <div className="relative bg-gray-100 rounded-lg overflow-hidden aspect-square">
                 <img
-                  src={images[selectedImage]}
+                  src={image}
                   alt={product.name}
                   className="w-full h-full object-cover"
                 />
-                {discount > 0 && (
-                  <div className="absolute top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-full font-semibold">
-                    -{discount}%
-                  </div>
-                )}
               </div>
-
-              {images.length > 1 && (
-                <div className="grid grid-cols-4 gap-3">
-                  {images.map((img, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedImage(idx)}
-                      className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                        selectedImage === idx
-                          ? 'border-gray-900 scale-95'
-                          : 'border-transparent hover:border-gray-300'
-                      }`}
-                    >
-                      <img
-                        src={img}
-                        alt={`${product.name} ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
             </motion.div>
 
             <motion.div
@@ -122,12 +92,12 @@ export default function ProductDetailPage() {
               transition={{ duration: 0.5 }}
               className="flex flex-col"
             >
-              {product.categories && (
+              {product.product_category && (
                 <Link
-                  href={`/products?category=${product.categories.slug}`}
+                  href={`/products?category=${product.product_category.id}`}
                   className="text-sm text-blue-600 hover:underline uppercase tracking-wider mb-2"
                 >
-                  {product.categories.name}
+                  {product.product_category.name}
                 </Link>
               )}
 
@@ -139,23 +109,25 @@ export default function ProductDetailPage() {
                 <span className="text-4xl font-bold text-gray-900">
                   ${product.price.toFixed(2)}
                 </span>
-                {product.compare_at_price && product.compare_at_price > product.price && (
-                  <span className="text-2xl text-gray-500 line-through">
-                    ${product.compare_at_price.toFixed(2)}
-                  </span>
-                )}
               </div>
 
-              <p className="text-gray-700 leading-relaxed mb-8 text-lg">
+              <p className="text-gray-700 leading-relaxed mb-6 text-lg">
                 {product.description}
               </p>
+
+              <div className="mb-6">
+                <p className="text-sm text-gray-500 mb-2">Manufacturer</p>
+                <p className="text-lg font-medium text-gray-900">
+                  {product.manufacturer}
+                </p>
+              </div>
 
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
                   <Truck className="w-6 h-6 text-blue-600 shrink-0" />
                   <div>
-                    <p className="font-semibold text-sm">Free Shipping</p>
-                    <p className="text-xs text-gray-600">On orders over $50</p>
+                    <p className="font-semibold text-sm">Fast Delivery</p>
+                    <p className="text-xs text-gray-600">Quick shipping available</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg">
@@ -183,16 +155,12 @@ export default function ProductDetailPage() {
                       {quantity}
                     </span>
                     <button
-                      onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                      onClick={() => setQuantity(quantity + 1)}
                       className="px-4 py-3 hover:bg-gray-100 transition-colors font-semibold"
-                      disabled={quantity >= product.stock}
                     >
                       +
                     </button>
                   </div>
-                  <p className="text-sm text-gray-600">
-                    {product.stock} items available
-                  </p>
                 </div>
               </div>
 
@@ -201,11 +169,10 @@ export default function ProductDetailPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleAddToCart}
-                  disabled={product.stock === 0}
-                  className="flex-1 bg-gray-900 text-white px-8 py-4 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="flex-1 bg-gray-900 text-white px-8 py-4 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors"
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                  Add to Cart
                 </motion.button>
 
                 <motion.button
@@ -216,22 +183,6 @@ export default function ProductDetailPage() {
                   <Heart className="w-6 h-6" />
                 </motion.button>
               </div>
-
-              {product.stock < 10 && product.stock > 0 && (
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
-                  <p className="text-orange-800 font-semibold">
-                    Only {product.stock} left in stock - order soon!
-                  </p>
-                </div>
-              )}
-
-              {product.stock === 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-red-800 font-semibold">
-                    This item is currently out of stock
-                  </p>
-                </div>
-              )}
             </motion.div>
           </div>
         </div>
