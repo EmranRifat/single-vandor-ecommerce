@@ -1,17 +1,19 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { ShoppingCart } from 'lucide-react';
-import type { Item } from '../types/items';
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { ShoppingCart } from "lucide-react";
+import type { Item } from "../types/items";
 
 interface ItemCardProps {
   item: Item;
   index?: number;
 }
 
-export default function ItemCard({ item, index = 0 }: ItemCardProps) {
-  const itemPath = `/items/${item.id}`;
+
+export default function ItemCard({ item, index = 0 }:ItemCardProps) {
+ 
+  const itemPath = `/products/${item.id}`;
 
   return (
     <motion.div
@@ -66,19 +68,20 @@ export default function ItemCard({ item, index = 0 }: ItemCardProps) {
                 <span className="ml-1 text-sm text-gray-500">/ night</span>
               </div>
 
-              <motion.button
-                type="button"
+              <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="rounded-full bg-gray-900 p-2 text-white transition-colors hover:bg-gray-800"
               >
                 <ShoppingCart className="h-5 w-5" />
-              </motion.button>
+              </motion.div>
             </div>
 
             <div className="mt-3 flex items-center justify-between gap-2 text-xs text-gray-500">
               <span>{item.reviews_count} reviews</span>
-              <span className="truncate text-right">Host: {item.host_name}</span>
+              <span className="truncate text-right">
+                Host: {item.host_name}
+              </span>
             </div>
           </div>
         </div>
