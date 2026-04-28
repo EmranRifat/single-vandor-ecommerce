@@ -81,7 +81,7 @@ export default function ProductsPage() {
                     New Arrivals
                   </motion.button>
                 </Link>
-
+{/* 
                 {categories.map((category: Category) => (
                   <Link
                     key={category.id}
@@ -98,7 +98,7 @@ export default function ProductsPage() {
                       {category.name}
                     </motion.button>
                   </Link>
-                ))}
+                ))} */}
               </div>
             </div>
           </motion.div>

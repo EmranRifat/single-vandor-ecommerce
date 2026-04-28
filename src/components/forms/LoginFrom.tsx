@@ -12,6 +12,7 @@ import { useAuth } from "@/lib/auth-context";
 import { EyeSlashIcon } from "../common/icons/EyeSlashIcon";
 import { EyeIcon } from "../common/icons/EyeIcon";
 
+
 type UserLoginData = {
   email: string;
   password: string;
@@ -20,7 +21,6 @@ type UserLoginData = {
 export default function LoginForm() {
   const router = useRouter();
   const { setUser } = useAuth();
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isVisible, setIsVisible] = useState(false);
@@ -103,6 +103,7 @@ export default function LoginForm() {
   });
 
   return (
+    
   <form onSubmit={formik.handleSubmit} className="space-y-5">
       {/* EMAIL */}
       <motion.div
@@ -169,15 +170,16 @@ export default function LoginForm() {
       {/* ERROR */}
       {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
+     
       {/* BUTTON */}
-      <Button
-        type="submit"
-        color="success"
-        className="w-full text-white py-4 text-md"
-        isLoading={loading}
-      >
-        Login
-      </Button>
+        <button
+          type="submit"
+          color="success"
+          className="w-full text-white py-4 text-md"
+          isLoading={loading}
+        >
+          Login
+        </button>
     </form>
   );
 }
