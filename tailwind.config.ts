@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-   content: [
+  content: [
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./node_modules/@heroui/**/*.{js,ts,jsx,tsx}",
@@ -302,9 +302,7 @@ const config: Config = {
       },
     },
   },
-  plugins: {
-    "@tailwindcss/postcss": {},
-  },
+  plugins: [],
 };
 
 export default config;
