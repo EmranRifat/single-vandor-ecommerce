@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { Product } from "../types";
+import type { Product } from "../types/types";
 
 export interface CartItem {
   id: string;
@@ -24,7 +24,7 @@ const calculateTotals = (items: CartItem[]) => {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
-    0
+    0,
   );
 
   return { totalItems, totalPrice };
@@ -36,11 +36,11 @@ const cartSlice = createSlice({
   reducers: {
     addToCart: (
       state,
-      action: PayloadAction<{ product: Product; quantity: number }>
+      action: PayloadAction<{ product: Product; quantity: number }>,
     ) => {
       const { product, quantity } = action.payload;
       const existingItem = state.items.find(
-        (item) => item.productId === product.id
+        (item) => item.productId === product.id,
       );
 
       if (existingItem) {
@@ -61,7 +61,7 @@ const cartSlice = createSlice({
 
     removeFromCart: (state, action: PayloadAction<string>) => {
       state.items = state.items.filter(
-        (item) => item.productId !== action.payload
+        (item) => item.productId !== action.payload,
       );
 
       const totals = calculateTotals(state.items);
@@ -71,7 +71,7 @@ const cartSlice = createSlice({
 
     updateQuantity: (
       state,
-      action: PayloadAction<{ productId: string; quantity: number }>
+      action: PayloadAction<{ productId: string; quantity: number }>,
     ) => {
       const { productId, quantity } = action.payload;
       const item = state.items.find((item) => item.productId === productId);
@@ -79,7 +79,7 @@ const cartSlice = createSlice({
       if (item) {
         if (quantity <= 0) {
           state.items = state.items.filter(
-            (cartItem) => cartItem.productId !== productId
+            (cartItem) => cartItem.productId !== productId,
           );
         } else {
           item.quantity = quantity;
@@ -107,7 +107,12 @@ const cartSlice = createSlice({
   },
 });
 
-export const { addToCart, removeFromCart, updateQuantity, clearCart, loadCart } =
-  cartSlice.actions;
+export const {
+  addToCart,
+  removeFromCart,
+  updateQuantity,
+  clearCart,
+  loadCart,
+} = cartSlice.actions;
 
 export default cartSlice.reducer;

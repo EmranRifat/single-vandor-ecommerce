@@ -1,4 +1,4 @@
-import { NewUser, RegUserResponse } from "@/lib/types";
+import { NewUser, RegUserResponse } from "@/lib/types/types";
 import { useMutation } from "@tanstack/react-query";
 
 const registerUser = async (newUser: NewUser): Promise<RegUserResponse> => {

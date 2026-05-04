@@ -1,5 +1,5 @@
 import { Item } from "@/src/types/items";
-import { Category } from "./types";
+import { Category } from "./types/types";
 
 export type ProductDetail = Item & {
   name?: string;
@@ -38,13 +38,13 @@ async function fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
 
 export const getCategories = async (): Promise<Category[]> => {
   return fetchJSON<Category[]>(
-    `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/product-categories`
+    `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/product-categories`,
   );
 };
 
 export const getCategory = async (id: string): Promise<Category> => {
   return fetchJSON<Category>(
-    `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/product-categories/${id}`
+    `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/product-categories/${id}`,
   );
 };
 

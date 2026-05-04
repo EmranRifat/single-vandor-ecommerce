@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { getCategories, getFeaturedProducts } from "@/lib/queries";
+import { getCategories } from "@/lib/queries";
 import { ArrowRight, Package, Truck, Shield, Headphones } from "lucide-react";
-import ProductCard from "../components/itemsCard";
+
+import { Product } from "@/lib/types/getProducts";
+import { useGetProductData } from "@/lib/hooks/product/useGetProducts";
+import ProductCard from "../components/ProductCard";
 
 export default function Home() {
   const { data: categories = [] } = useQuery({
@@ -13,14 +16,18 @@ export default function Home() {
     queryFn: getCategories,
   });
 
-  const { data: featuredProducts = [] } = useQuery({
-    queryKey: ["featured-products"],
-    queryFn: getFeaturedProducts,
-  });
-
+  // const { data: featuredProducts = [] } = useQuery({
+  //   queryKey: ['featured-products'],
+  //   queryFn: getFeaturedProducts
+  // });
+  const payload = {
+    page: 1,
+    limit: 6,
+  };
+  const { data, isError } = useGetProductData(payload);
   return (
     <div className="min-h-screen">
-      <section className="relative bg-gradient-to-br from-blue-50 via-white to-gray-50 overflow-hidden">
+      <section className="relative bg-linear-to-br from-blue-50 via-white to-gray-50 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -65,7 +72,7 @@ export default function Home() {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative h-[400px] md:h-[500px]"
+              className="relative h-100 md:h-125"
             >
               <img
                 src="https://images.pexels.com/photos/230544/pexels-photo-230544.jpeg"
@@ -207,9 +214,11 @@ export default function Home() {
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredProducts.map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
-            ))}
+            {data?.listings
+              .slice(0, 3)
+              .map((product: Product, index: number) => (
+                <ProductCard key={product.id} item={product} index={index} />
+              ))}
           </div>
 
           <div className="text-center mt-12">

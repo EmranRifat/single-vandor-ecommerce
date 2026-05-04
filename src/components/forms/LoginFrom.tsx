@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Input } from "@heroui/react";
+import { Button, FieldError, Input, Label, Spinner, TextField } from "@heroui/react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useFormik } from "formik";
@@ -106,27 +106,37 @@ export default function LoginForm() {
     
   <form onSubmit={formik.handleSubmit} className="space-y-5">
       {/* EMAIL */}
-      <motion.div
+     <motion.div
         initial={{ x: -300, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.15 }}
       >
-        <Input
-          id="email"
+        {/* TextField is the correct HeroUI v3 wrapper for label + input + validation */}
+        <TextField
           name="email"
-          label="Enter Your Email"
           type="email"
-          value={formik.values.email}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          errorMessage={
-            formik.touched.email && formik.errors.email
-              ? formik.errors.email
-              : ""
-          }
-          variant="bordered"
           isRequired
-        />
+          isInvalid={!!(formik.touched.email && formik.errors.email)}
+          validationBehavior="aria"
+          variant="secondary"
+        >
+          <Label>Enter Your Email</Label>
+          <Input
+            className="
+    py-2.5 bg-white
+    data-[focus-visible=true]:ring-0
+    data-[focus-visible=true]:outline-none
+    data-[focus-visible=true]:border-gray-400
+  "
+            value={formik.values.email}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            fullWidth
+          />
+          {formik.touched.email && formik.errors.email && (
+            <FieldError>{formik.errors.email}</FieldError>
+          )}
+        </TextField>
       </motion.div>
 
       {/* PASSWORD */}
@@ -135,36 +145,46 @@ export default function LoginForm() {
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.15, delay: 0.05 }}
       >
-        <Input
-          endContent={
+        <TextField
+          name="password"
+          isRequired
+          isInvalid={!!(formik.touched.password && formik.errors.password)}
+          validationBehavior="aria"
+          variant="secondary"
+          className="relative "
+        >
+          <Label>Enter Your Password</Label>
+          <div className="relative flex items-center">
+            <Input
+             className="
+    py-2.5 bg-white
+    data-[focus-visible=true]:ring-0
+    data-[focus-visible=true]:outline-none
+    data-[focus-visible=true]:border-gray-400
+  "
+              type={isVisible ? "text" : "password"}
+              value={formik.values.password}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              fullWidth
+            />
             <button
               aria-label="toggle password visibility"
-              className="focus:outline-solid outline-transparent"
+              className="absolute right-3 focus:outline-none"
               type="button"
               onClick={toggleVisibility}
             >
               {isVisible ? (
-                <EyeSlashIcon className="text-xl text-default-400 pointer-events-none" />
+                <EyeSlashIcon className="text-md text-default-400 pointer-events-none" />
               ) : (
-                <EyeIcon className="text-xl text-default-400 pointer-events-none" />
+                <EyeIcon className="text-md text-default-400 pointer-events-none" />
               )}
             </button>
-          }
-          id="password"
-          name="password"
-          label="Enter Your Password"
-          type={isVisible ? "text" : "password"}
-          value={formik.values.password}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          errorMessage={
-            formik.touched.password && formik.errors.password
-              ? formik.errors.password
-              : ""
-          }
-          variant="bordered"
-          isRequired
-        />
+          </div>
+          {formik.touched.password && formik.errors.password && (
+            <FieldError>{formik.errors.password}</FieldError>
+          )}
+        </TextField>
       </motion.div>
 
       {/* ERROR */}
@@ -172,14 +192,23 @@ export default function LoginForm() {
 
      
       {/* BUTTON */}
-        <button
-          type="submit"
-          color="success"
-          className="w-full text-white py-4 text-md"
-          isLoading={loading}
-        >
-          Login
-        </button>
+        <Button
+        size="lg"
+        type="submit"
+        variant="secondary"
+        isDisabled={loading}
+        fullWidth
+        className="w-full py-4 text-md"
+      >
+        {loading ? (
+          <span className="flex items-center justify-center gap-2">
+            <Spinner size="sm" />
+            Logging in...
+          </span>
+        ) : (
+          "Login"
+        )}
+      </Button>
     </form>
   );
 }

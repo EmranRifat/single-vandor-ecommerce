@@ -6,11 +6,11 @@ import { getCategories } from "@/lib/queries";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { useProductList } from "@/lib/http/product/useGetProducts";
 import Cookies from "js-cookie";
 import { Category, Item } from "@/src/types/items";
-import ItemCard from "@/src/components/itemsCard";
-import { ItemListPayload } from "@/lib/types";
+import ItemCard from "@/src/components/ProductCard";
+import { ItemListPayload } from "@/lib/types/types";
+import { useGetProductData } from "@/lib/hooks/product/useGetProducts";
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
@@ -24,8 +24,8 @@ export default function ProductsPage() {
     category: categoryId || undefined,
   };
 
-  const { data, isLoading, error } = useProductList(payload);
-  const items = data?.data || [];
+  const { data, isLoading, isError } = useGetProductData(payload);
+  const items = data?.listings || [];
 
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
@@ -81,7 +81,7 @@ export default function ProductsPage() {
                     New Arrivals
                   </motion.button>
                 </Link>
-{/* 
+                {/* 
                 {categories.map((category: Category) => (
                   <Link
                     key={category.id}
@@ -113,11 +113,11 @@ export default function ProductsPage() {
                 {[...Array(6)].map((_, i) => (
                   <div
                     key={i}
-                    className="h-[420px] rounded-lg bg-white shadow-sm animate-pulse"
+                    className="h-105 rounded-lg bg-white shadow-sm animate-pulse"
                   />
                 ))}
               </div>
-            ) : error ? (
+            ) : isError ? (
               <div className="text-center py-20">
                 <p className="text-red-500 text-lg">Failed to load data.</p>
               </div>

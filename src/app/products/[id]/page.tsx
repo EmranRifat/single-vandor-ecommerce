@@ -1,6 +1,6 @@
 "use client";
 
-import { useProductDetails } from "@/lib/http/product/useProductDetails";
+import { useProductDetails } from "@/lib/hooks/product/useProductDetails";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 
@@ -40,7 +40,7 @@ console.log("dynamic data.>",item)
     <div className="mx-auto max-w-6xl px-4 py-10">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <div className="overflow-hidden rounded-2xl bg-gray-100 shadow">
-          <div className="relative aspect-[4/3] w-full">
+          <div className="relative aspect-4/3 w-full">
             <Image
               src={item.image}
               alt={item.title}
