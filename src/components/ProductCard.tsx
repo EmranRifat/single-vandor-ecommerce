@@ -11,7 +11,7 @@ interface ItemCardProps {
 }
 
 
-export default function ItemCard({ item, index = 0 }:ItemCardProps) {
+export default function ProductCard({ item, index = 0 }:ItemCardProps) {
  
   const itemPath = `/products/${item.id}`;
 
@@ -25,7 +25,7 @@ export default function ItemCard({ item, index = 0 }:ItemCardProps) {
     >
       <Link href={itemPath} className="block h-full">
         <div className="flex h-full flex-col overflow-hidden rounded-lg bg-white shadow-md transition-shadow duration-300 hover:shadow-xl">
-          <div className="relative aspect-[4/3] w-full bg-gray-100">
+          <div className="relative aspect-4/3 w-full bg-gray-100">
             <img
               src={item.image}
               alt={item.title}

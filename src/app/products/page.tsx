@@ -6,11 +6,13 @@ import { getCategories } from "@/lib/queries";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { useProductList } from "@/lib/http/product/useGetProducts";
 import Cookies from "js-cookie";
-import { Category, Item } from "@/src/types/items";
-import ItemCard from "@/src/components/itemsCard";
-import { ItemListPayload } from "@/lib/types";
+import ItemCard from "@/src/components/Products/ProductCard";
+import { ItemListPayload, Category } from "@/lib/types/types";
+import { useGetProductData } from "@/lib/hooks/product/useGetProducts";
+import { Categories } from "@/src/components/Categories";
+import { Product } from "@/lib/types/getProducts";
+import SearchBar from "@/src/components/Products/SearchBar";
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
@@ -24,8 +26,8 @@ export default function ProductsPage() {
     category: categoryId || undefined,
   };
 
-  const { data, isLoading, error } = useProductList(payload);
-  const items = data?.data || [];
+  const { data, isLoading, isError } = useGetProductData(payload);
+  const items = data?.listings || [];
 
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
@@ -34,9 +36,12 @@ export default function ProductsPage() {
 
   const currentCategory = categories.find((c: Category) => c.id === categoryId);
 
+  console.log("catagoriessss>>>>>>>>>>>", currentCategory);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* <SearchBar/> */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -47,6 +52,7 @@ export default function ProductsPage() {
               Home
             </Link>
             <ChevronRight className="w-4 h-4" />
+
             <span className="text-gray-900 font-semibold">
               {currentCategory ? currentCategory.name : "All Products"}
             </span>
@@ -67,6 +73,7 @@ export default function ProductsPage() {
               <h2 className="text-xl font-bold text-gray-900 mb-6">
                 Categories
               </h2>
+              <Categories />
 
               <div className="space-y-2">
                 <Link href="/products">
@@ -81,7 +88,7 @@ export default function ProductsPage() {
                     New Arrivals
                   </motion.button>
                 </Link>
-{/* 
+                {/* 
                 {categories.map((category: Category) => (
                   <Link
                     key={category.id}
@@ -103,6 +110,8 @@ export default function ProductsPage() {
             </div>
           </motion.div>
 
+          {/* PRODUCTS */}
+
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -113,17 +122,17 @@ export default function ProductsPage() {
                 {[...Array(6)].map((_, i) => (
                   <div
                     key={i}
-                    className="h-[420px] rounded-lg bg-white shadow-sm animate-pulse"
+                    className="h-105 rounded-lg bg-white shadow-sm animate-pulse"
                   />
                 ))}
               </div>
-            ) : error ? (
+            ) : isError ? (
               <div className="text-center py-20">
                 <p className="text-red-500 text-lg">Failed to load data.</p>
               </div>
             ) : items.length > 0 ? (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                {items.map((item: Item, index: number) => (
+                {items.map((item: Product, index: number) => (
                   <ItemCard key={item.id} item={item} index={index} />
                 ))}
               </div>

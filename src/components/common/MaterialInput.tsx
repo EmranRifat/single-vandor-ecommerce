@@ -1,4 +1,5 @@
 "use client";
+
 import { ChangeEvent, FocusEvent, useEffect, useRef, useState } from "react";
 import { EyeIcon } from "./icons/EyeIcon";
 import { EyeSlashIcon } from "./icons/EyeSlashIcon";
@@ -20,36 +21,15 @@ const MaterialInput = ({
   whenChange,
   whenBlur,
   doFocus,
-}: {
-  id: string;
-  name: string;
-  type: string;
-  place_holder?: string;
-  label: string;
-  autoFocus?: boolean;
-  value: string;
-  autoComplete?: string;
-  error: string;
-  showClearButton?: boolean;
-  clearInput?: () => void;
-  showPasswordToggle?: boolean;
-  isRequired?: boolean;
-  whenChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  whenBlur: (e: FocusEvent<HTMLInputElement>) => void;
-  doFocus?: number;
-}) => {
+}: any) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   useEffect(() => {
-    if (doFocus && doFocus > 0 && inputRef.current) {
+    if (doFocus && inputRef.current) {
       inputRef.current.focus();
     }
   }, [doFocus]);
-
-  const togglePasswordVisibility = () => {
-    setIsPasswordVisible(!isPasswordVisible);
-  };
 
   const inputType =
     showPasswordToggle && type === "password"
@@ -59,67 +39,93 @@ const MaterialInput = ({
       : type;
 
   return (
-    <div>
-      <div
-        className="relative material-textfield w-full text-postDark dark:text-postLight"
-        suppressHydrationWarning
-      >
+    <div className="w-full">
+
+      {/* Input Wrapper */}
+      <div className="relative w-full">
+
         <input
           ref={inputRef}
-          placeholder={place_holder || ""}
-          type={inputType}
-          autoFocus={autoFocus || false}
-          className="w-full text-postDark dark:text-postLight border-medium rounded-md border-postLight dark:border-postBorderDark"
           id={id}
           name={name}
-          onChange={(e) => whenChange(e)}
-          onBlur={(e) => whenBlur(e)}
+          type={inputType}
           value={value}
+          onChange={whenChange}
+          onBlur={whenBlur}
+          autoFocus={autoFocus}
           autoComplete={autoComplete}
+          placeholder={place_holder || " "}
           required={isRequired}
-          data-lastpass-icon-root="true"
+          className={`
+            peer w-full
+            px-4 py-3
+            border rounded-lg
+            bg-transparent
+            text-gray-800
+            focus:outline-none
+            transition-all duration-200
+            ${
+              error
+                ? "border-red-500 focus:ring-2 focus:ring-red-400"
+                : "border-gray-300 focus:border-green-500 focus:ring-2 focus:ring-green-400"
+            }
+          `}
         />
-        <label className="absolute left-2 top-3 transition-all duration-200 text-gray-600 dark:text-postLight">
+
+        {/* Floating Label */}
+        <label
+          className="
+            absolute left-4
+            top-3
+            text-gray-500
+            text-sm
+            transition-all duration-200
+            peer-placeholder-shown:top-3
+            peer-placeholder-shown:text-sm
+            peer-focus:-top-2
+            peer-focus:text-xs
+            peer-focus:text-green-600
+            bg-white px-1
+          "
+        >
           {label}
-          {isRequired && <span className="text-postRed ml-1">*</span>}
+          {isRequired && <span className="text-red-500 ml-1">*</span>}
         </label>
+
+        {/* Password Toggle */}
         {showPasswordToggle && type === "password" && (
           <button
             type="button"
-            className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer text-gray-600 dark:text-postLight hover:text-postDark dark:hover:text-white transition-colors"
-            onClick={togglePasswordVisibility}
+            onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800 transition"
             tabIndex={-1}
           >
             {isPasswordVisible ? (
-              <EyeSlashIcon className="w-6 h-6" />
+              <EyeSlashIcon className="w-5 h-5" />
             ) : (
-              <EyeIcon className="w-6 h-6" />
+              <EyeIcon className="w-5 h-5" />
             )}
           </button>
         )}
+
+        {/* Clear Button */}
         {showClearButton && value.length > 0 && (
-          <div
-            className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer text-postRed"
+          <button
+            type="button"
             onClick={clearInput}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="size-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18 18 6M6 6l12 12"
-              />
-            </svg>
-          </div>
+            ✕
+          </button>
         )}
       </div>
-      <p className="text-sm ml-2 my-2 text-postRed">{error}</p>
+
+      {/* Error Text */}
+      {error && (
+        <p className="text-sm text-red-500 mt-1 ml-1">
+          {error}
+        </p>
+      )}
     </div>
   );
 };

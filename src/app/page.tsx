@@ -3,24 +3,50 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { getCategories, getFeaturedProducts } from "@/lib/queries";
+import { getCategories } from "@/lib/queries";
 import { ArrowRight, Package, Truck, Shield, Headphones } from "lucide-react";
-import ProductCard from "../components/itemsCard";
+
+import { Product } from "@/lib/types/getProducts";
+import { useGetProductData } from "@/lib/hooks/product/useGetProducts";
+import ProductCard from "../components/Products/ProductCard";
+import { Button, Card, ScrollShadow } from "@heroui/react";
+import Gallery from "../components/Home/Gallery";
+import SearchBar from "../components/Products/SearchBar";
+import { menuItems, navItems } from "../components/ui/menuItem/items";
+import { usePathname } from "next/navigation";
+import Footer from "../components/common/footer/footer";
+
+const images = [
+  "https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/docs/robot1.jpeg",
+  "https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/docs/avocado.jpeg",
+  "https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/docs/oranges.jpeg",
+];
 
 export default function Home() {
+  const pathname = usePathname();
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
   });
+  console.log("category data .....>>>", categories);
+  // const { data: featuredProducts = [] } = useQuery({
+  //   queryKey: ['featured-products'],
+  //   queryFn: getFeaturedProducts
+  // });
+  const payload = {
+    page: 1,
+    limit: 6,
+  };
+  const { data, isError } = useGetProductData(payload);
 
-  const { data: featuredProducts = [] } = useQuery({
-    queryKey: ["featured-products"],
-    queryFn: getFeaturedProducts,
-  });
+  const products = data?.listings;
 
+  const getRandomImage = (idx: number) => {
+    return images[idx % images.length];
+  };
   return (
     <div className="min-h-screen">
-      <section className="relative bg-gradient-to-br from-blue-50 via-white to-gray-50 overflow-hidden">
+      {/* <section className="relative bg-linear-to-br from-blue-50 via-white to-gray-50 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -65,7 +91,7 @@ export default function Home() {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative h-[400px] md:h-[500px]"
+              className="relative h-100 md:h-125"
             >
               <img
                 src="https://images.pexels.com/photos/230544/pexels-photo-230544.jpeg"
@@ -75,9 +101,9 @@ export default function Home() {
             </motion.div>
           </div>
         </div>
-      </section>
+      </section> */}
 
-      <section className="py-16 bg-white border-y">
+      {/* <section className="py-16 bg-white border-y">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <motion.div
@@ -188,31 +214,60 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
-      <section className="py-20 bg-white">
+      {/* Center */}
+
+      <section className="py-10 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="flex justify-between mb-6"
           >
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Featured Products
+              New Arrivals
             </h2>
-            <p className="text-gray-600 text-lg">
-              Handpicked favorites just for you
-            </p>
+            <Button size="sm" variant="secondary">
+              {" "}
+              <Link href={"/products"}>view all {">"} </Link>
+            </Button>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredProducts.map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8">
+            {data?.listings
+              .slice(0, 6)
+              .map((product: Product, index: number) => (
+                <ProductCard key={product.id} item={product} index={index} />
+              ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="pb-10 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex justify-between mb-6"
+          >
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Signature Apartments
+            </h2>
+            <Link href={"/products"}>view all</Link>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8">
+            {data?.listings
+              .slice(0, 6)
+              .map((product: Product, index: number) => (
+                <ProductCard key={product.id} item={product} index={index} />
+              ))}
           </div>
 
-          <div className="text-center mt-12">
+          {/* <div className="text-center mt-12">
             <Link href="/products">
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -223,90 +278,16 @@ export default function Home() {
                 <ArrowRight className="w-5 h-5" />
               </motion.button>
             </Link>
-          </div>
+          </div> */}
         </div>
       </section>
 
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-2xl font-bold mb-4">ShopHub</h3>
-              <p className="text-gray-400">
-                Your trusted online shopping destination.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Shop</h4>
-              <ul className="space-y-2 text-gray-400">
-                {categories.slice(0, 4).map((category: any) => (
-                  <li key={category.id}>
-                    <Link
-                      href={`/products?category=${category.slug}`}
-                      className="hover:text-white transition-colors"
-                    >
-                      {category.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Customer Service</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Contact Us
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Shipping Info
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Returns
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    FAQ
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">About</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Our Story
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Careers
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Terms of Service
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 ShopHub. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+         <Gallery products={products} />
+             
+      </div> */}
+
+      <Footer />
     </div>
   );
 }

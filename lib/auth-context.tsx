@@ -2,8 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import { AuthContextType, User } from "./types";
-
+import { AuthContextType, User } from "./types/types";
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -13,7 +12,6 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,17 +30,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-
-
   const logout = () => {
     Cookies.remove("token");
     Cookies.remove("user");
     Cookies.remove("role");
     setUser(null);
   };
-
-
-
 
   return (
     <AuthContext.Provider value={{ user, loading, setUser, logout }}>
