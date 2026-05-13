@@ -6,14 +6,21 @@ import Image from "next/image";
 import { Globe, Menu, CircleUserRound } from "lucide-react";
 import { menuItems, navItems } from "../components/ui/menuItem/items";
 import { Button } from "@heroui/react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import SearchBar from "../components/Products/SearchBar";
+import { useAuth } from "@/lib/auth-context";
 
 export default function Navbar() {
   const [openMenu, setOpenMenu] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+   const { user, logout, loading } = useAuth();
+ const router = useRouter();
+    const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -94,13 +101,13 @@ export default function Navbar() {
             Become a host
           </button>
 
-          <button className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-gray-100">
+          {/* <button className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-gray-100">
             <Globe size={18} />
-          </button>
+          </button> */}
 
           {/* Profile Menu */}
           <div className="relative" ref={menuRef}>
-            <Button
+            {/* <Button
               size="sm"
               aria-expanded={openMenu}
               aria-label="Open user menu"
@@ -109,10 +116,31 @@ export default function Navbar() {
             >
               <Menu size={18} />
               <CircleUserRound size={28} className="text-gray-500" />
-            </Button>
+            </Button> */}
+
+            {loading ? (
+            <div className="w-20 h-9 bg-gray-200 rounded-md animate-pulse" />
+          ) : !user ? (
+            <Link
+              href="/login"
+              className="bg-black text-white px-4 py-2 rounded-md"
+            >
+              Login
+            </Link>
+          ) : (
+            <div className="flex items-center gap-3">
+              <span className="text-gray-700 font-medium">{user.name}</span>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white px-3 py-1 rounded-md"
+              >
+                Logout
+              </button>
+            </div>
+          )}
 
             {/* Dropdown */}
-            {openMenu && (
+            {/* {openMenu && (
               <div className="absolute right-0 top-14 w-65 overflow-hidden rounded-3xl border border-gray-200 bg-white py-3 shadow-xl transition-all duration-400 ease-out animate-in fade-in zoom-in-95">
                 <div className="flex flex-col">
                   {menuItems.map((item) => {
@@ -135,7 +163,7 @@ export default function Navbar() {
                   })}
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>
