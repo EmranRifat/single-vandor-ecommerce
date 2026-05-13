@@ -1,7 +1,8 @@
-@tailwind base;
+/* @tailwind base;
 @tailwind components;
-@tailwind utilities;
-
+@tailwind utilities; */
+@import "tailwindcss";
+@import "@heroui/styles"; 
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
@@ -44,6 +45,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -79,6 +81,8 @@
     @apply bg-background text-foreground;
   }
 } */
+
+
 @layer base {
   body {
     @apply bg-background text-foreground;

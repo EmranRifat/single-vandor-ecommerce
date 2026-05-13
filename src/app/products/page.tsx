@@ -2,59 +2,46 @@
 
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { getProducts, getCategories } from "@/lib/queries";
+import { getCategories } from "@/lib/queries";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import ProductCard from "@/src/components/product-card";
-
-import { Accordion, AccordionItem } from "@heroui/react";
-import type { Selection } from "@heroui/react";
-
-import PriceRange from "@/src/components/ui/PriceRange";
-import React from "react";
-
-/* ---------------- TYPES ---------------- */
-
-type Category = {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-};
-
-type Product = {
-  id: string;
-  name: string;
-  price: number;
-  image?: string;
-};
-
-/* ---------------- COMPONENT ---------------- */
+import Cookies from "js-cookie";
+import ItemCard from "@/src/components/Products/ProductCard";
+import { ItemListPayload } from "@/lib/types/types";
+import { useGetProductData } from "@/lib/hooks/product/useGetProducts";
+import { Categories } from "@/src/components/Categories";
+import { Category, Product } from "@/lib/types/getProducts";
+import SearchBar from "@/src/components/Products/SearchBar";
 
 export default function ProductsPage() {
-
-  const [selectedKeys, setSelectedKeys] = React.useState<Selection>(new Set(["2"]));
-
   const searchParams = useSearchParams();
-  const categorySlug = searchParams.get("category");
+  const categoryId = searchParams.get("category") || "";
+  const token = Cookies.get("token") || "";
 
-  const { data: products = [], isLoading } = useQuery<Product[]>({
-    queryKey: ["products", categorySlug],
-    queryFn: () => getProducts(categorySlug || undefined),
-  });
+  const payload: ItemListPayload = {
+    page: 1,
+    limit: 10,
+    token,
+    category: categoryId || undefined,
+  };
 
-  const { data: categories = [] } = useQuery<Category[]>({
+  const { data, isLoading, isError } = useGetProductData(payload);
+  const items = data?.listings || [];
+
+  const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
   });
 
-  const currentCategory = categories.find((c) => c.slug === categorySlug);
+  const currentCategory = categories.find((c: Category) => c.id === categoryId);
+
+  console.log("catagoriessss>>>>>>>>>>>", currentCategory);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-
+        {/* <SearchBar/> */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -64,7 +51,6 @@ export default function ProductsPage() {
             <Link href="/" className="hover:text-gray-900 transition-colors">
               Home
             </Link>
-
             <ChevronRight className="w-4 h-4" />
 
             <span className="text-gray-900 font-semibold">
@@ -75,81 +61,52 @@ export default function ProductsPage() {
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             {currentCategory ? currentCategory.name : "All Products"}
           </h1>
-
-          {currentCategory && (
-            <p className="text-gray-600 text-lg">
-              {currentCategory.description}
-            </p>
-          )}
         </motion.div>
 
-        <div className="grid lg:grid-cols-4 gap-8">
-
-          {/* FILTER SIDEBAR */}
-
+        <div className="grid gap-8 lg:grid-cols-4">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className="lg:col-span-1"
           >
             <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">
+                Categories
+              </h2>
+              <Categories />
 
-              <Accordion
-                selectedKeys={selectedKeys}
-                onSelectionChange={(keys) => setSelectedKeys(keys)}
-              >
-
-                 <AccordionItem
-                  key="1"
-                  aria-label="Accordion 2"
-                  subtitle="Press to expand"
-                  title="Select Price Range"
-                >
-                  <PriceRange />
-                </AccordionItem>
-
-                <AccordionItem
-                  key="2"
-                  aria-label="Accordion 1"
-                  subtitle="Press to expand"
-                  title="Select Category"
-                >
-                  <div className="space-y-2">
-
-                    <Link href="/products">
-                      <motion.button
-                        className={`w-full text-left px-2 py-1.5 rounded-lg transition-colors ${
-                          !categorySlug
-                            ? "bg-gray-800 text-white"
-                            : "text-gray-700 hover:bg-gray-100"
-                        }`}
-                      >
-                        All Products
-                      </motion.button>
-                    </Link>
-
-                    {categories.map((category) => (
-                      <Link
-                        key={category.id}
-                        href={`/products?category=${category.slug}`}
-                      >
-                        <motion.button
-                          className={`w-full text-left my-1 px-2 py-1.5 rounded-lg transition-colors ${
-                            categorySlug === category.slug
-                              ? "bg-gray-900 text-white"
-                              : "text-gray-700 hover:bg-gray-100"
-                          }`}
-                        >
-                          {category.name}
-                        </motion.button>
-                      </Link>
-                    ))}
-
-                  </div>
-                </AccordionItem>
-
-              </Accordion>
-
+              <div className="space-y-2">
+                <Link href="/products">
+                  <motion.button
+                    whileHover={{ x: 4 }}
+                    className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                      !categoryId
+                        ? "bg-gray-900 text-white"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    New Arrivals
+                  </motion.button>
+                </Link>
+                {/* 
+                {categories.map((category: Category) => (
+                  <Link
+                    key={category.id}
+                    href={`/products?category=${category.id}`}
+                  >
+                    <motion.button
+                      whileHover={{ x: 4 }}
+                      className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                        categoryId === category.id
+                          ? "bg-gray-900 text-white"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      {category.name}
+                    </motion.button>
+                  </Link>
+                ))} */}
+              </div>
             </div>
           </motion.div>
 
@@ -160,43 +117,33 @@ export default function ProductsPage() {
             animate={{ opacity: 1 }}
             className="lg:col-span-3"
           >
-
             {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {[...Array(6)].map((_, i) => (
                   <div
                     key={i}
-                    className="bg-white rounded-lg shadow-sm h-96 animate-pulse"
+                    className="h-105 rounded-lg bg-white shadow-sm animate-pulse"
                   />
                 ))}
               </div>
-
-            ) : products.length > 0 ? (
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-
-                {products.map((product, index) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    index={index}
-                  />
-                ))}
-
+            ) : isError ? (
+              <div className="text-center py-20">
+                <p className="text-red-500 text-lg">Failed to load data.</p>
               </div>
-
+            ) : items.length > 0 ? (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                {items.map((item: Product, index: number) => (
+                  <ItemCard key={item.id} item={item} index={index} />
+                ))}
+              </div>
             ) : (
-
               <div className="text-center py-20">
                 <p className="text-gray-500 text-lg">
-                  No products found in this category.
+                  No data found in this category.
                 </p>
               </div>
-
             )}
-
           </motion.div>
-
         </div>
       </div>
     </div>

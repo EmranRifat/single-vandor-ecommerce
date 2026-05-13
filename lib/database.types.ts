@@ -7,7 +7,7 @@ export interface Database {
           name: string;
           slug: string;
           description: string;
-          image_url: string;
+          image: string;
           created_at: string;
         };
         Insert: Omit<Database['public']['Tables']['categories']['Row'], 'id' | 'created_at'>;
@@ -22,7 +22,7 @@ export interface Database {
           price: number;
           compare_at_price: number | null;
           category_id: string | null;
-          image_url: string;
+          image: string;
           images: string[];
           stock: number;
           featured: boolean;
@@ -90,6 +90,7 @@ export type OrderItem = Database['public']['Tables']['order_items']['Row'];
 
 export interface ProductWithCategory extends Product {
   categories?: Category;
+  
 }
 
 export interface CartItemWithProduct extends CartItem {

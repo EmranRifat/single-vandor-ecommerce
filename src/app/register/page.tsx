@@ -1,4 +1,4 @@
-import RegisterForm from "@/src/components/from/RegisterForm";
+import RegisterForm from "@/src/components/forms/RegisterForm";
 import { ToastContainer } from "react-toastify";
 
 export default function RegisterPage() {
@@ -8,17 +8,16 @@ export default function RegisterPage() {
         <h1 className="text-2xl font-bold text-center mb-6">Register </h1>
 
         <RegisterForm />
-       
-        <p className="text-gray-700 text-sm mt-2">
-            Already have an account?{" "}
-            <a href="/login" className="text-blue-500 hover:underline">
-              Login here
-            </a>
-          </p>
-      </div>
-    
-     <ToastContainer position="top-right" autoClose={5000} />
 
+        <p className="text-gray-700 text-sm mt-2">
+          Already have an account?{" "}
+          <a href="/login" className="text-blue-500 hover:underline">
+            Login here
+          </a>
+        </p>
+      </div>
+
+      <ToastContainer position="top-right" autoClose={5000} />
     </div>
   );
 }

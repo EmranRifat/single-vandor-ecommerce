@@ -319,7 +319,7 @@ export default function CheckoutPage() {
                 {cartItems.map((item) => (
                   <div key={item.productId} className="flex gap-3">
                     <img
-                      src={item.product.image_url}
+                      src={item.product.image}
                       alt={item.product.name}
                       className="w-16 h-16 object-cover rounded-lg"
                     />
