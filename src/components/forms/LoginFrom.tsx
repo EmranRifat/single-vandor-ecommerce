@@ -1,6 +1,13 @@
 "use client";
 
-import { Button, FieldError, Input, Label, Spinner, TextField } from "@heroui/react";
+import {
+  Button,
+  FieldError,
+  Input,
+  Label,
+  Spinner,
+  TextField,
+} from "@heroui/react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useFormik } from "formik";
@@ -12,12 +19,10 @@ import { useAuth } from "@/lib/auth-context";
 import { EyeSlashIcon } from "../common/icons/EyeSlashIcon";
 import { EyeIcon } from "../common/icons/EyeIcon";
 
-
 type UserLoginData = {
   email: string;
   password: string;
 };
-
 
 export default function LoginForm() {
   const router = useRouter();
@@ -25,9 +30,8 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isVisible, setIsVisible] = useState(false);
-  const toggleVisibility = () => setIsVisible(!isVisible); 
-  
-  
+  const toggleVisibility = () => setIsVisible(!isVisible);
+
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -35,79 +39,70 @@ export default function LoginForm() {
     },
 
     validationSchema: Yup.object({
-      email: Yup.string()
-        .email("Invalid email")
-        .required("Email is required"),
+      email: Yup.string().email("Invalid email").required("Email is required"),
 
       password: Yup.string().required("Password is required"),
     }),
 
+    onSubmit: async (values) => {
+      setLoading(true);
+      setError("");
 
+      try {
+        const payload: UserLoginData = {
+          email: values.email,
+          password: values.password,
+        };
 
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/auth/login`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify(payload),
+          },
+        );
 
+        const data = await response.json();
+        console.log("Login response data ..", data);
 
+        if (response.ok && data.status === "success") {
+          const token = data?.token;
+          const user = data?.user;
 
-   onSubmit: async (values) => {
-  setLoading(true);
-  setError("");
+          // if (!token || !user) {
+          //   setError("Invalid login response");
+          //   return;
+          // }
 
-  try {
-    const payload: UserLoginData = {
-      email: values.email,
-      password: values.password,
-    };
+          // store cookies
+          Cookies.set("token", token);
+          Cookies.set("user", JSON.stringify(user));
+          Cookies.set("role", JSON.stringify(user?.role));
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/auth/login`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(payload),
+          // update auth co  ntext
+          setUser(user);
+
+          router.push("/products");
+        } else {
+          setError(data.message || data.error || "Login failed");
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Something went wrong");
+      } finally {
+        setLoading(false);
       }
-    );
-
-    const data = await response.json();
-    console.log("Login response data ..", data);
-
-    if (response.ok && data.status === "success") {
-      const token = data?.token;
-      const user = data?.user;
-
-      // if (!token || !user) {
-      //   setError("Invalid login response");
-      //   return;
-      // }
-
-
-      // store cookies
-      Cookies.set("token", token);
-      Cookies.set("user", JSON.stringify(user));
-      Cookies.set("role", JSON.stringify( user?.role));
-
-      // update auth co  ntext
-      setUser(user);
-
-      router.push("/products");
-    } else {
-      setError(data.message || data.error || "Login failed");
-    }
-  } catch (err) {
-    console.error(err);
-    setError("Something went wrong");
-  } finally {
-    setLoading(false);
-  }
-},
+    },
   });
 
   return (
-    
-  <form onSubmit={formik.handleSubmit} className="space-y-5">
+    <form onSubmit={formik.handleSubmit} className="space-y-5">
       {/* EMAIL */}
-     <motion.div
+      <motion.div
         initial={{ x: -300, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.15 }}
@@ -124,11 +119,11 @@ export default function LoginForm() {
           <Label>Enter Your Email</Label>
           <Input
             className="
-    py-2.5 bg-white
-    data-[focus-visible=true]:ring-0
-    data-[focus-visible=true]:outline-none
-    data-[focus-visible=true]:border-gray-400
-  "
+              py-2.5 bg-white
+              data-[focus-visible=true]:ring-0
+              data-[focus-visible=true]:outline-none
+              data-[focus-visible=true]:border-gray-400
+                       "
             value={formik.values.email}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
@@ -157,7 +152,7 @@ export default function LoginForm() {
           <Label>Enter Your Password</Label>
           <div className="relative flex items-center">
             <Input
-             className="
+              className="
     py-2.5 bg-white
     data-[focus-visible=true]:ring-0
     data-[focus-visible=true]:outline-none
@@ -191,9 +186,8 @@ export default function LoginForm() {
       {/* ERROR */}
       {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
-     
       {/* BUTTON */}
-        <Button
+      <Button
         size="lg"
         type="submit"
         variant="secondary"
