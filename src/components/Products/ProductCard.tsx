@@ -16,18 +16,16 @@ export default function ProductCard({ item, index = 0 }: ItemCardProps) {
 
   return (
     <>
-      <motion.div
-         
-      >
+      <motion.div className="w-full">
         <Link href={itemPath} className="block h-full">
-          <div className="flex flex-col overflow-hidden  ">
+          <div className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-md hover:shadow-lg transition-shadow h-80">
             <div className="relative w-full h-44 bg-gray-100">
               <Image
                 width={400}
                 height={300}
                 src={item.image}
                 alt={item.title}
-                className="h-full w-full border rounded-2xl object-cover transition-transform duration-300 group-hover:scale-105"
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
 
               {item.is_superhost && (
@@ -41,37 +39,25 @@ export default function ProductCard({ item, index = 0 }: ItemCardProps) {
               </div>
             </div>
 
-            <div className="flex flex-1 flex-col py-2">
-              <h3 className="mb-1 line-clamp-2 text-sm font-semibold text-gray-900 transition-colors group-hover:text-blue-600">
-                {item.title}
-              </h3>
+            <div className="flex flex-1 flex-col p-3">
+              <div className="flex items-start gap-2 mb-2">
+                <h3 className="text-sm font-semibold text-gray-900 flex-1">
+                  {item.title}
+                </h3>
+                <span className="text-xs text-gray-500 capitalize bg-gray-100 px-1.5 py-0.5 rounded whitespace-nowrap text-xxs">
+                  {item.category}
+                </span>
+              </div>
 
-              <div className="mt-auto flex items-center justify-between gap-3 pt-">
-                <div>
-                  <span className="text-lg   text-gray-900">
+              <div className="mt-auto flex items-end justify-between">
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold text-pink-500">
                     ${item.price_per_night}
                   </span>
-                  <span className="ml-1 text-sm text-gray-500">/ night</span>
+                  <span className="text-xs text-gray-500">per day</span>
                 </div>
-                <div className = "text-sm text-gray-500">
-                  New
-                </div>
-
-                {/* <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="rounded-full bg-gray-900 p-2 text-white transition-colors hover:bg-gray-800"
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                </motion.div> */}
+                <span className="text-xs text-gray-400">New</span>
               </div>
-{/* 
-              <div className="mt-3 flex items-center justify-between gap-2 text-xs text-gray-500">
-                <span>{item.reviews_count} reviews</span>
-                <span className="truncate text-right">
-                  Host: {item.host_name}
-                </span>
-              </div> */}
             </div>
           </div>
         </Link>

@@ -5,23 +5,18 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { getCategories } from "@/lib/queries";
-import { ArrowRight, Package, Truck, Shield, Headphones } from "lucide-react";
-
 import { Product } from "@/lib/types/getProducts";
 import { Category } from "@/lib/types/types";
 import { useGetProductData } from "@/lib/hooks/product/useGetProducts";
 import ProductCard from "../components/Products/ProductCard";
-import { Button, Card, ScrollShadow } from "@heroui/react";
-import Gallery from "../components/Home/Gallery";
-import SearchBar from "../components/Products/SearchBar";
-import { menuItems, navItems } from "../components/ui/menuItem/items";
-import { usePathname } from "next/navigation";
 import Footer from "../components/common/footer/footer";
 import TabsComponent from "../components/common/Tabs/tabs";
+import { Spinner } from "@heroui/react";
 
 export default function Home() {
-  const pathname = usePathname();
   const [activeCategory, setActiveCategory] = useState("apartments");
+  const [showAll, setShowAll] = useState(false);
+
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
@@ -35,19 +30,25 @@ export default function Home() {
 
   const selectedCategoryName =
     tabCategoryNameMap[activeCategory] || activeCategory;
- 
-    const selectedCategoryId = categories.find(
+
+  const selectedCategoryId = categories.find(
     (category: Category) =>
       category.name.toLowerCase() === selectedCategoryName.toLowerCase(),
   )?.id;
 
   const payload = {
     page: 1,
-    limit: 6,
+    limit: 100,
     category: selectedCategoryId ?? selectedCategoryName,
   };
-  const { data, isError } = useGetProductData(payload);
-  console.log("data-->", data);
+
+  const { data, isLoading, isFetching, isError, error } =
+    useGetProductData(payload);
+  const listings = data?.listings || [];
+  const visibleListings = showAll ? listings : listings.slice(0, 12);
+  console.log("listings-->", listings);
+  console.log("visibleListings-->", visibleListings);
+  console.log("showAll-->", showAll);
 
   return (
     <div className="min-h-screen">
@@ -59,6 +60,24 @@ export default function Home() {
           />
         </div>
       </div>
+      {isLoading || isFetching ? (
+        <div className="flex items-center justify-center py-20">
+          <Spinner color="success" />{" "}
+          <p className="text-gray-500 text-lg">Loading ...</p>
+        </div>
+      ) : isError ? (
+        <div className="flex items-center justify-center py-20">
+          <p className="text-red-500 text-lg">
+            {error?.message || "Unable to load products."}
+          </p>
+        </div>
+      ) : listings.length === 0 ? (
+        <div className="flex items-center justify-center py-20">
+          <p className="text-gray-500 text-lg">
+            No products found in this category.
+          </p>
+        </div>
+      ) : null}
       <section className="py-10 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -74,19 +93,24 @@ export default function Home() {
                   ? "Hotels"
                   : "Rooms"}
             </h2>
-            <Button size="sm" variant="secondary">
-              {" "}
-              <Link href={"/products"}>view all {">"} </Link>
-            </Button>
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8">
-            {data?.listings
-              .slice(0, 6)
-              .map((product: Product, index: number) => (
-                <ProductCard key={product.id} item={product} index={index} />
-              ))}
+            {visibleListings.map((product: Product, index: number) => (
+              <ProductCard key={product.id} item={product} index={index} />
+            ))}
           </div>
+          {listings.length > 12 && !showAll ? (
+            <div className="flex justify-center mt-10">
+              <button
+                type="button"
+                onClick={() => setShowAll(true)}
+                className="px-6 py-3 rounded-full bg-linear-to-r from-orange-500 to-red-600 text-white font-medium shadow-lg hover:scale-105 hover:from-blue-600 hover:to-red-600 transition-all duration-300"
+              >
+                See more
+              </button>
+            </div>
+          ) : null}
         </div>
       </section>
 

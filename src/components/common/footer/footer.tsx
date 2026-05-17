@@ -58,7 +58,10 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="/privacy-policy" className="hover:text-white transition">
+                <a
+                  href="/privacy-policy"
+                  className="hover:text-white transition"
+                >
                   Privacy Policy
                 </a>
               </li>
@@ -80,6 +83,8 @@ const Footer = () => {
             <form className="flex flex-col sm:flex-row gap-3">
               <input
                 type="email"
+                name="email"
+                autoComplete="email"
                 placeholder="Enter your email"
                 className="w-full rounded-md bg-gray-900 border border-gray-700 px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white"
               />

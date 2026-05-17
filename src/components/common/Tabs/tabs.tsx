@@ -5,6 +5,8 @@ interface TabsComponentProps {
   onTabChange: (tab: string) => void;
 }
 
+
+
 const tabItems = [
   {
     id: "apartments",
@@ -23,10 +25,11 @@ const tabItems = [
   },
 ];
 
-const TabsComponent = ({
-  activeTab,
-  onTabChange,
-}: TabsComponentProps) => {
+
+
+
+
+const TabsComponent = ({ activeTab, onTabChange }: TabsComponentProps) => {
   return (
     <div className="inline-flex bg-gray-100">
       {tabItems.map((tab) => {
@@ -38,11 +41,7 @@ const TabsComponent = ({
             type="button"
             onClick={() => onTabChange(tab.id)}
             className={`relative flex items-center gap-2 px-4 py-4 text-sm font-semibold transition-all duration-200
-              ${
-                isActive
-                  ? "text-black"
-                  : "text-gray-400 hover:text-gray-700"
-              }`}
+              ${isActive ? "text-black" : "text-gray-400 hover:text-gray-700"}`}
           >
             {/* Icon */}
             <span className="text-3xl">{tab.icon}</span>
