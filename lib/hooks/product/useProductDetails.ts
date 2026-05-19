@@ -5,14 +5,31 @@ export interface ProductItem {
   title: string;
   description: string;
   price_per_night: number;
+  currency?: string;
   city: string;
   country: string;
+  location?: string;
+  address?: string;
   image: string;
+  images?: string[];
   category: string;
   rating: number;
   reviews_count: number;
   host_name: string;
   is_superhost: boolean;
+  host?: {
+    name?: string;
+    is_superhost?: boolean;
+  };
+  details?: {
+    guests?: number;
+    bedrooms?: number;
+    beds?: number;
+    bathrooms?: number;
+  };
+  amenities?: string[];
+  house_rules?: string[];
+  availability?: boolean;
   created_at: string;
   updated_at: string;
 }

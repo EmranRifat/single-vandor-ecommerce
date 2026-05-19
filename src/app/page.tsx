@@ -33,8 +33,7 @@ export default function Home() {
 
   const selectedCategoryId = categories.find(
     (category: Category) =>
-      category.name.toLowerCase() === selectedCategoryName.toLowerCase(),
-  )?.id;
+      category.name.toLowerCase() === selectedCategoryName.toLowerCase())?.id;
 
   const payload = {
     page: 1,
@@ -42,17 +41,17 @@ export default function Home() {
     category: selectedCategoryId ?? selectedCategoryName,
   };
 
-  const { data, isLoading, isFetching, isError, error } =
-    useGetProductData(payload);
+  const { data, isLoading , isFetching, isError, error} = useGetProductData(payload);
+  
   const listings = data?.listings || [];
-  const visibleListings = showAll ? listings : listings.slice(0, 12);
-  console.log("listings-->", listings);
-  console.log("visibleListings-->", visibleListings);
-  console.log("showAll-->", showAll);
+  const visibleListings = showAll ? listings : listings.slice(0,8);
+  // console.log("listings-->", listings);
+  // console.log("visibleListings-->", visibleListings);
+  // console.log("showAll-->", showAll);
 
   return (
     <div className="min-h-screen">
-      <div className="flex flex-col items-center justify-center text-center py-10 bg-gray-50">
+      <div className="flex flex-col items-center justify-center text-center py-6 bg-gray-50">
         <div className="w-fit">
           <TabsComponent
             activeTab={activeCategory}
@@ -60,6 +59,7 @@ export default function Home() {
           />
         </div>
       </div>
+     
       {isLoading || isFetching ? (
         <div className="flex items-center justify-center py-20">
           <Spinner color="success" />{" "}
@@ -94,8 +94,7 @@ export default function Home() {
                   : "Rooms"}
             </h2>
           </motion.div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {visibleListings.map((product: Product, index: number) => (
               <ProductCard key={product.id} item={product} index={index} />
             ))}

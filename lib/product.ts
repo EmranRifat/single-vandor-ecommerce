@@ -15,6 +15,7 @@ type LooseProduct = Partial<ProductWithCategory> & {
 };
 
 export function normalizeProduct(product: LooseProduct): ProductWithCategory {
+ 
   const rawImage = product.image || product.image_url || "";
   const category = product.categories || product.product_category;
 
@@ -28,7 +29,7 @@ export function normalizeProduct(product: LooseProduct): ProductWithCategory {
       typeof product.compare_at_price === "number"
         ? product.compare_at_price
         : null,
-      category_id:
+    category_id:
       product.category_id ||
       product.product_category_id ||
       category?.id ||
@@ -46,13 +47,13 @@ export function normalizeProduct(product: LooseProduct): ProductWithCategory {
     updated_at: product.updated_at || "",
     categories: category
       ? {
-          id: category.id || "",
-          name: category.name || "",
-          slug: category.slug || category.id || "",
-          description: category.description || "",
-          image: category.image || category.image || "",
-          created_at: category.created_at || "",
-        }
+        id: category.id || "",
+        name: category.name || "",
+        slug: category.slug || category.id || "",
+        description: category.description || "",
+        image: category.image || category.image || "",
+        created_at: category.created_at || "",
+      }
       : undefined,
   };
 }

@@ -39,7 +39,8 @@ export default function ProductCard({ item, index = 0 }: ItemCardProps) {
               </div>
             </div>
 
-            <div className="flex flex-1 flex-col p-3">
+            <div className="flex flex-1 flex-col p-2">
+             
               <div className="flex items-start gap-2 mb-2">
                 <h3 className="text-sm font-semibold text-gray-900 flex-1">
                   {item.title}
@@ -48,11 +49,14 @@ export default function ProductCard({ item, index = 0 }: ItemCardProps) {
                   {item.category}
                 </span>
               </div>
+               <h3 className="text-sm text-gray-800 flex-1">
+                              {item.city}, {item.country}
+                            </h3>
 
               <div className="mt-auto flex items-end justify-between">
                 <div className="flex flex-col">
                   <span className="text-sm font-semibold text-pink-500">
-                    ${item.price_per_night}
+                    BDT {item.price_per_night} Taka
                   </span>
                   <span className="text-xs text-gray-500">per day</span>
                 </div>

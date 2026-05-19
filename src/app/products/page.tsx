@@ -36,7 +36,7 @@ export default function ProductsPage() {
 
   const currentCategory = categories.find((c: Category) => c.id === categoryId);
 
-  console.log("catagoriessss>>>>>>>>>>>", currentCategory);
+  console.log("catagoriessss>>>>>", currentCategory);
 
   return (
     <div className="min-h-screen bg-gray-50">
