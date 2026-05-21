@@ -8,7 +8,7 @@ import { AuthProvider } from "@/lib/auth-context";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Airbnb | Vacation rentals, cabins, beach houses, & more",
+  title: "StayNest | Vacation rentals, apartments, and short stays",
   description:
     "Discover amazing products at great prices. Shop electronics, fashion, home & living, and sports equipment.",
   openGraph: {

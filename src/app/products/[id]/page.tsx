@@ -1,19 +1,33 @@
 "use client";
 
 import { useProductDetails } from "@/lib/hooks/product/useProductDetails";
+import ReviewsSection from "@/src/components/Products/ReviewsSection";
 import {
+  BadgeCheck,
+  Bath,
+  Bed,
   CalendarDays,
+  Car,
   Check,
   ChevronDown,
+  CircleDot,
+  Coffee,
+  IdCard,
   Grid3X3,
   MapPin,
+  MessageSquare,
+  Snowflake,
   Star,
+  Tv,
   User,
+  Utensils,
+  Wifi,
   X,
 } from "lucide-react";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { DateRange, DayPicker } from "react-day-picker";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -30,32 +44,118 @@ const formatCurrency = (amount: number, currency?: string) => {
 const pluralize = (count: number, singular: string, plural = `${singular}s`) =>
   `${count} ${count === 1 ? singular : plural}`;
 
+const getFacilityIcon = (facility: string) => {
+  const value = facility.toLowerCase();
+
+  if (value.includes("blanket") || value.includes("bed")) return Bed;
+  if (value.includes("id")) return IdCard;
+  if (value.includes("ac") || value.includes("air")) return Snowflake;
+  if (value.includes("wifi")) return Wifi;
+  if (value.includes("parking")) return Car;
+  if (value.includes("coffee")) return Coffee;
+  if (value.includes("tv")) return Tv;
+  if (value.includes("kitchen")) return Utensils;
+  if (value.includes("water") || value.includes("washroom")) return Bath;
+
+  return CircleDot;
+};
+
+const getLocationCoordinates = (
+  location?: string | { lat?: number; lng?: number }
+) => {
+  if (!location || typeof location === "string") {
+    return null;
+  }
+
+  if (typeof location.lat !== "number" || typeof location.lng !== "number") {
+    return null;
+  }
+
+  return {
+    lat: location.lat,
+    lng: location.lng,
+  };
+};
+
+const getLocationLabel = (
+  location: string | { lat?: number; lng?: number } | undefined,
+  fallback: string
+) => (typeof location === "string" && location ? location : fallback);
+
+const getMapEmbedUrl = (lat: number, lng: number) => {
+  const delta = 0.008;
+  const bbox = [
+    lng - delta,
+    lat - delta,
+    lng + delta,
+    lat + delta,
+  ].join(",");
+
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`;
+};
+
+const getDefaultBookingRange = (): DateRange => {
+  const from = new Date();
+  from.setDate(from.getDate() + 3);
+
+  const to = new Date(from);
+  to.setDate(to.getDate() + 1);
+
+  return { from, to };
+};
+
+const getNights = (range: DateRange) => {
+  if (!range.from || !range.to) {
+    return 1;
+  }
+
+  return Math.max(
+    1,
+    Math.round((range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24))
+  );
+};
+
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const id = params?.id;
   const [showAllAmenities, setShowAllAmenities] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [showGuests, setShowGuests] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange>(getDefaultBookingRange);
+  const [guestSelection, setGuestSelection] = useState({
+    adults: 1,
+    children: 0,
+    infants: 0,
+    pets: 0,
+  });
 
   const { data, isLoading, isError, error } = useProductDetails({ id });
 
   const bookingDates = useMemo(() => {
-    const checkIn = new Date();
-    checkIn.setDate(checkIn.getDate() + 3);
-
-    const checkOut = new Date(checkIn);
-    checkOut.setDate(checkOut.getDate() + 1);
-
     return {
-      checkIn,
-      checkOut,
-      nights: Math.max(
-        1,
-        Math.round(
-          (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)
-        )
-      ),
+      checkIn: dateRange.from,
+      checkOut: dateRange.to,
+      nights: getNights(dateRange),
     };
-  }, []);
+  }, [dateRange]);
+
+  const updateGuestCount = (
+    key: keyof typeof guestSelection,
+    direction: "increase" | "decrease"
+  ) => {
+    setGuestSelection((current) => {
+      const minimum = key === "adults" ? 1 : 0;
+      const nextValue =
+        direction === "increase" ? current[key] + 1 : current[key] - 1;
+
+      return {
+        ...current,
+        [key]: Math.max(minimum, nextValue),
+      };
+    });
+  };
 
   if (isLoading) {
     return (
@@ -106,13 +206,60 @@ export default function ProductDetailPage() {
   const totalPrice = item.price_per_night * bookingDates.nights;
   const hostName = item.host?.name || item.host_name;
   const isSuperhost = item.host?.is_superhost ?? item.is_superhost;
+  const locationLabel = getLocationLabel(
+    item.location,
+    item.address || `${item.city}, ${item.country}`
+  );
+  
+  const mapCoordinates = getLocationCoordinates(item.location);
+  const facilities = amenities.length
+    ? amenities.slice(0, 6)
+    : ["Blanket", "ID Required", "Air Conditioner"];
+  const bookingGuestCount = guestSelection.adults + guestSelection.children;
+  const bookingUrl = `/booking?${new URLSearchParams({
+    id: item.id,
+    checkIn: bookingDates.checkIn
+      ? bookingDates.checkIn.toISOString()
+      : "",
+    checkOut: bookingDates.checkOut
+      ? bookingDates.checkOut.toISOString()
+      : "",
+    adults: String(guestSelection.adults),
+    children: String(guestSelection.children),
+  }).toString()}`;
+  const guestRows = [
+    {
+      key: "adults" as const,
+      title: "Adults",
+      subtitle: "Age 13+",
+      value: guestSelection.adults,
+    },
+    {
+      key: "children" as const,
+      title: "Children",
+      subtitle: "Ages 2-12",
+      value: guestSelection.children,
+    },
+    {
+      key: "infants" as const,
+      title: "Infants",
+      subtitle: "Under 2",
+      value: guestSelection.infants,
+    },
+    {
+      key: "pets" as const,
+      title: "Pets",
+      subtitle: "Bringing a service animal?",
+      value: guestSelection.pets,
+    },
+  ];
 
   return (
     <main className="bg-white">
       <div className="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 lg:px-8">
         <div className="mb-5">
           <p className="text-sm font-medium capitalize text-gray-500">
-            {item.category} in {item.location || `${item.city}, ${item.country}`}
+            {item.category} in {locationLabel}
           </p>
           <h1 className="mt-1 text-2xl font-semibold text-gray-950 sm:text-3xl">
             {item.title}
@@ -127,7 +274,7 @@ export default function ProductDetailPage() {
             </a>
             <span className="inline-flex items-center gap-1">
               <MapPin className="h-4 w-4 text-gray-500" />
-              {item.address || `${item.city}, ${item.country}`}
+              {item.address || locationLabel}
             </span>
           </div>
         </div>
@@ -267,14 +414,17 @@ export default function ProductDetailPage() {
             </div>
 
             {!!item.house_rules?.length && (
-              <div className="border-b border-gray-200 py-7">
-                <h2 className="text-xl font-semibold text-gray-950">
+              <div className="border-b border-gray-200 py-5">
+                <h2 className="text-lg font-semibold text-gray-950">
                   House rules
                 </h2>
-                <ul className="mt-4 grid gap-3 text-gray-800 sm:grid-cols-2">
+                <ul className="mt-3 flex flex-nowrap gap-3 overflow-x-auto pb-1 text-sm text-gray-800">
                   {item.house_rules.map((rule) => (
-                    <li key={rule} className="flex items-center gap-2">
-                      <X className="h-4 w-4 text-rose-500" />
+                    <li
+                      key={rule}
+                      className="flex shrink-0 items-center gap-2 rounded-lg border border-gray-200 px-3 py-2"
+                    >
+                      <X className="h-3.5 w-3.5 text-rose-500" />
                       {rule}
                     </li>
                   ))}
@@ -282,9 +432,70 @@ export default function ProductDetailPage() {
               </div>
             )}
 
+            <div className="border-b border-gray-200 py-5">
+              <h2 className="text-lg font-semibold text-gray-950">
+                Facilities
+              </h2>
+              <div className="mt-3 flex flex-nowrap gap-3 overflow-x-auto pb-1">
+                {facilities.map((facility) => {
+                  const FacilityIcon = getFacilityIcon(facility);
+
+                  return (
+                    <div
+                      key={facility}
+                      className="flex shrink-0 items-center gap-2 rounded-lg border border-gray-200 px-3 py-2"
+                    >
+                      <span className="flex h-7 w-7 items-center justify-center rounded-md bg-gray-50 text-gray-950">
+                        <FacilityIcon className="h-4 w-4" />
+                      </span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {facility}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="border-b border-gray-200 py-7">
+              <div className="flex items-center gap-5">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xl font-bold text-gray-950">
+                  {hostName?.slice(0, 1).toUpperCase() || "H"}
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-950">
+                    Hello, I am {hostName}
+                  </h2>
+                  <p className="mt-2 flex items-center gap-2 text-sm font-medium text-gray-800">
+                    <BadgeCheck className="h-4 w-4 fill-emerald-500 text-emerald-500" />
+                    Identity verified
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-8 flex items-center gap-3 font-medium text-gray-950">
+                <MessageSquare className="h-5 w-5 text-gray-600" />
+                <span>Languages Bangla, English</span>
+              </div>
+
+              <button
+                type="button"
+                className="mt-8 w-full max-w-xl rounded-lg border-2 border-pink-500 px-6 py-4 font-semibold text-pink-500 transition hover:bg-pink-50"
+              >
+                Contact Host
+              </button>
+            </div>
+
             <p className="pt-4 text-base font-semibold text-gray-950">
-              Selected: {dateFormatter.format(bookingDates.checkIn)} -{" "}
-              {dateFormatter.format(bookingDates.checkOut)} (
+              Selected:{" "}
+              {bookingDates.checkIn
+                ? dateFormatter.format(bookingDates.checkIn)
+                : "Select check in"}{" "}
+              -{" "}
+              {bookingDates.checkOut
+                ? dateFormatter.format(bookingDates.checkOut)
+                : "Select check out"}{" "}
+              (
               {pluralize(bookingDates.nights, "night")})
             </p>
           </section>
@@ -305,54 +516,224 @@ export default function ProductDetailPage() {
                 for {pluralize(bookingDates.nights, "night")}
               </p>
 
-              <div className="mt-7 overflow-hidden rounded-lg border border-gray-300">
-                <div className="grid grid-cols-2 divide-x divide-gray-300">
-                  <div className="flex items-center gap-3 p-4">
-                    <CalendarDays className="h-5 w-5 text-gray-500" />
-                    <div>
-                      <p className="text-sm text-gray-600">Check In</p>
-                      <p className="text-sm font-semibold text-gray-950">
-                        {dateFormatter.format(bookingDates.checkIn)}
-                      </p>
+              <div className="relative mt-7">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCalendar((value) => !value);
+                    setShowGuests(false);
+                  }}
+                  className="w-full overflow-hidden rounded-lg border border-gray-300 text-left transition hover:border-gray-950"
+                >
+                  <div className="grid grid-cols-2 divide-x divide-gray-300">
+                    <div className="flex items-center gap-3 p-4">
+                      <CalendarDays className="h-5 w-5 text-gray-500" />
+                      <div>
+                        <p className="text-sm text-gray-600">Check In</p>
+                        <p className="text-sm font-semibold text-gray-950">
+                          {bookingDates.checkIn
+                            ? dateFormatter.format(bookingDates.checkIn)
+                            : "Add date"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-4">
+                      <CalendarDays className="h-5 w-5 text-gray-500" />
+                      <div>
+                        <p className="text-sm text-gray-600">Check Out</p>
+                        <p className="text-sm font-semibold text-gray-950">
+                          {bookingDates.checkOut
+                            ? dateFormatter.format(bookingDates.checkOut)
+                            : "Add date"}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-4">
-                    <CalendarDays className="h-5 w-5 text-gray-500" />
-                    <div>
-                      <p className="text-sm text-gray-600">Check Out</p>
-                      <p className="text-sm font-semibold text-gray-950">
-                        {dateFormatter.format(bookingDates.checkOut)}
-                      </p>
+                </button>
+
+                {showCalendar && (
+                  <div className="absolute left-0 right-0 top-full z-20 mt-2 rounded-2xl border border-gray-200 bg-white p-4 shadow-2xl">
+                    <DayPicker
+                      mode="range"
+                      selected={dateRange}
+                      onSelect={(range) =>
+                        setDateRange(range || getDefaultBookingRange())
+                      }
+                      numberOfMonths={1}
+                      disabled={{ before: new Date() }}
+                      classNames={{
+                        months: "flex",
+                        month: "w-full space-y-4",
+                        caption:
+                          "relative flex items-center justify-center py-2 text-sm font-semibold text-gray-950",
+                        nav: "absolute left-0 right-0 top-2 flex items-center justify-between",
+                        nav_button:
+                          "flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition hover:bg-gray-100",
+                        table: "w-full border-collapse",
+                        head_row: "grid grid-cols-7",
+                        head_cell:
+                          "h-9 text-center text-xs font-medium text-gray-500",
+                        row: "grid grid-cols-7",
+                        cell: "p-1 text-center",
+                        day: "h-9 w-9 rounded-full text-sm transition hover:bg-gray-100",
+                        day_selected:
+                          "bg-gray-950 text-white hover:bg-gray-950 hover:text-white",
+                        day_range_middle:
+                          "bg-pink-50 text-gray-950 hover:bg-pink-100",
+                        day_today: "font-bold text-pink-500",
+                        day_disabled:
+                          "cursor-not-allowed text-gray-300 hover:bg-transparent",
+                        day_outside: "text-gray-300",
+                      }}
+                    />
+                    <div className="mt-3 flex items-center justify-end gap-3 border-t border-gray-100 pt-3">
+                      <button
+                        type="button"
+                        onClick={() => setDateRange(getDefaultBookingRange())}
+                        className="text-sm font-semibold text-gray-700 underline underline-offset-2"
+                      >
+                        Reset
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowCalendar(false)}
+                        className="rounded-lg bg-gray-950 px-4 py-2 text-sm font-semibold text-white"
+                      >
+                        Done
+                      </button>
                     </div>
                   </div>
-                </div>
+                )}
+              </div>
+
+              <div className="relative mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowGuests((value) => !value);
+                    setShowCalendar(false);
+                  }}
+                  className="flex w-full items-center justify-between rounded-lg border border-gray-300 p-4 text-left transition hover:border-gray-950"
+                >
+                  <span className="flex items-center gap-3">
+                    <User className="h-5 w-5 text-gray-500" />
+                    <span>
+                      <span className="block text-sm uppercase text-gray-600">
+                        Guests
+                      </span>
+                      <span className="block text-sm font-semibold text-gray-950">
+                        {pluralize(bookingGuestCount, "guest")}
+                        {guestSelection.infants > 0
+                          ? `, ${pluralize(guestSelection.infants, "infant")}`
+                          : ""}
+                        {guestSelection.pets > 0
+                          ? `, ${pluralize(guestSelection.pets, "pet")}`
+                          : ""}
+                      </span>
+                    </span>
+                  </span>
+                  <ChevronDown
+                    className={`h-5 w-5 text-gray-700 transition ${
+                      showGuests ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {showGuests && (
+                  <div className="absolute left-0 right-0 top-full z-20 overflow-hidden rounded-b-2xl border border-t-0 border-gray-300 bg-white shadow-2xl">
+                    {guestRows.map((row) => {
+                      const minimum = row.key === "adults" ? 1 : 0;
+                      const canDecrease = row.value > minimum;
+
+                      return (
+                        <div
+                          key={row.key}
+                          className="flex items-center justify-between gap-4 px-4 py-5"
+                        >
+                          <div>
+                            <p className="font-semibold text-gray-950">
+                              {row.title}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {row.subtitle}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-4">
+                            <button
+                              type="button"
+                              disabled={!canDecrease}
+                              onClick={() => updateGuestCount(row.key, "decrease")}
+                              className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xl leading-none text-gray-500 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:text-gray-300"
+                              aria-label={`Decrease ${row.title}`}
+                            >
+                              -
+                            </button>
+                            <span className="w-5 text-center text-base text-gray-950">
+                              {row.value}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateGuestCount(row.key, "increase")}
+                              className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xl leading-none text-gray-700 transition hover:bg-gray-200"
+                              aria-label={`Increase ${row.title}`}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               <button
                 type="button"
-                className="mt-6 flex w-full items-center justify-between rounded-lg border border-gray-300 p-4 text-left"
-              >
-                <span className="flex items-center gap-3">
-                  <User className="h-5 w-5 text-gray-500" />
-                  <span>
-                    <span className="block text-sm text-gray-600">Guests</span>
-                    <span className="block text-sm font-semibold text-gray-950">
-                      {pluralize(guestCount, "guest")}
-                    </span>
-                  </span>
-                </span>
-                <ChevronDown className="h-5 w-5 text-gray-500" />
-              </button>
-
-              <button
-                type="button"
                 disabled={item.availability === false}
+                onClick={() => router.push(bookingUrl)}
                 className="mt-6 w-full rounded-lg bg-pink-500 px-6 py-4 text-sm font-bold text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:bg-gray-300"
               >
                 {item.availability === false ? "NOT AVAILABLE" : "BOOK NOW"}
               </button>
             </div>
           </aside>
+        </div>
+
+ 
+
+        <section className="mt-10 border-t border-gray-200 pt-10">
+          <h2 className="text-2xl font-semibold text-gray-950">Map</h2>
+          <div className="relative mt-4 h-[360px] overflow-hidden rounded-lg bg-gray-100 ring-1 ring-gray-200">
+            {mapCoordinates ? (
+              <iframe
+                title={`${item.title} map`}
+                src={getMapEmbedUrl(mapCoordinates.lat, mapCoordinates.lng)}
+                className="h-full w-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center bg-gray-100 text-gray-500">
+                Location coordinates are not available.
+              </div>
+            )}
+            <div className="absolute bottom-5 left-5 rounded-lg bg-white/95 px-4 py-3 shadow">
+              <p className="text-sm font-semibold text-gray-950">
+                {item.address || locationLabel}
+              </p>
+              {mapCoordinates && (
+                <p className="mt-1 text-xs text-gray-600">
+                  {mapCoordinates.lat.toFixed(6)}, {mapCoordinates.lng.toFixed(6)}
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+               <div className="mt-10">
+          <ReviewsSection rating={item.rating} reviewsCount={item.reviews_count} />
+          {/* show all reviews  */}
+          
         </div>
       </div>
 

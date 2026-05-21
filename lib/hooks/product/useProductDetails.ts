@@ -8,7 +8,12 @@ export interface ProductItem {
   currency?: string;
   city: string;
   country: string;
-  location?: string;
+  location?:
+    | string
+    | {
+        lat?: number;
+        lng?: number;
+      };
   address?: string;
   image: string;
   images?: string[];

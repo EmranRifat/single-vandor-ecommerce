@@ -17,6 +17,26 @@ export type ProductDetail = Item & {
   };
 };
 
+export type ManualBookingPayload = {
+  listing_id: string;
+  payment_method: "manual";
+  check_in: string;
+  check_out: string;
+  adults: number;
+  children: number;
+  total_amount: number;
+  currency: string;
+  billing_address: {
+    street: string;
+    city: string;
+    zip: string;
+    country: string;
+  };
+  card_last4: string;
+  card_expiration: string;
+  terms_accepted: boolean;
+};
+
 async function fetchJSON<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     headers: {
@@ -40,6 +60,24 @@ export const getCategories = async (): Promise<Category[]> => {
   return fetchJSON<Category[]>(
     `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/product-categories`,
   );
+};
+
+export const createManualBooking = async (
+  payload: ManualBookingPayload,
+): Promise<unknown> => {
+  const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL;
+
+  if (!baseUrl) {
+    throw new Error("NEXT_PUBLIC_BACKEND_API_URL is not defined");
+  }
+
+  return fetchJSON<unknown>(`${baseUrl}/api/bookings`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
 };
 
 export const getCategory = async (id: string): Promise<Category> => {
