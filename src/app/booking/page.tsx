@@ -103,6 +103,7 @@ const sslCommerzOptions = [
   "Bank",
 ];
 
+
 function BookingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -236,12 +237,12 @@ function BookingContent() {
       terms_accepted: acceptedTerms,
     };
 
-    try {
+    try { 
       setSubmitError("");
       setIsSubmitting(true);
       console.log("Manual booking payload", manualBookingPayload);
       const response = await createManualBooking(manualBookingPayload);
-      toast.success(response.message || "Booking created successfully");
+      toast.success(response.message || "Booking created successfully with manual payment");
       setSubmitted(true);
     } catch (error) {
       const message =

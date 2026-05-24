@@ -55,9 +55,7 @@ type ManualBookingResponse = {
   message?: string;
 };
 
-export const createManualBooking = async (
-  payload: ManualBookingPayload,
-): Promise<ManualBookingResponse> => {
+export const createManualBooking = async (payload: ManualBookingPayload): Promise<ManualBookingResponse> => {
   const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
   if (!baseUrl) {
