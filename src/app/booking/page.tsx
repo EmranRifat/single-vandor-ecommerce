@@ -25,6 +25,8 @@ import {
 import type { RootState } from "@/lib/store";
 import { useProductDetails } from "@/lib/hooks/product/useProductDetails";
 import { createManualBooking } from "@/lib/queries";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const fallbackListing = {
   id: "demo-booking",
@@ -238,12 +240,15 @@ function BookingContent() {
       setSubmitError("");
       setIsSubmitting(true);
       console.log("Manual booking payload", manualBookingPayload);
-      await createManualBooking(manualBookingPayload);
+      const response = await createManualBooking(manualBookingPayload);
+      toast.success(response.message || "Booking created successfully");
       setSubmitted(true);
     } catch (error) {
-      setSubmitError(
-        error instanceof Error ? error.message : "Failed to create booking",
-      );
+      const message =
+        error instanceof Error ? error.message : "Failed to create booking";
+
+      setSubmitError(message);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -780,6 +785,7 @@ export default function BookingPage() {
       }
     >
       <BookingContent />
+      <ToastContainer />
     </Suspense>
   );
 }

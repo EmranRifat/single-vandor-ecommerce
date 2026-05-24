@@ -1,3 +1,4 @@
+import { Item } from "@/src/types/items";
 
 export interface NewUser {
   email: string;
@@ -128,3 +129,40 @@ export interface ItemListResponse {
     total_pages: number;
   };
 }
+
+export type ProductDetail = Item & {
+  name?: string;
+  price?: number;
+  manufacturer?: string;
+  slug?: string;
+  compare_at_price?: number | null;
+  category_id?: string | null;
+  images?: string[];
+  stock?: number;
+  featured?: boolean;
+  product_category?: {
+    id: string;
+    name: string;
+  };
+};
+
+
+export type ManualBookingPayload = {
+  listing_id: string;
+  payment_method: "manual";
+  check_in: string;
+  check_out: string;
+  adults: number;
+  children: number;
+  total_amount: number;
+  currency: string;
+  billing_address: {
+    street: string;
+    city: string;
+    zip: string;
+    country: string;
+  };
+  card_last4: string;
+  card_expiration: string;
+  terms_accepted: boolean;
+};
