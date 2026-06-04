@@ -2,6 +2,7 @@
 
 import {
   Suspense,
+  useEffect,
   useMemo,
   useState,
   type Dispatch,
@@ -17,14 +18,20 @@ import {
   CheckCircle2,
   ChevronDown,
   LockKeyhole,
+  Mail,
+  Phone,
+  ShieldCheck,
   Smartphone,
   Star,
   Tag,
+  User,
   Users,
 } from "lucide-react";
 import type { RootState } from "@/lib/store";
+import { useAuth } from "@/lib/auth-context";
 import { useProductDetails } from "@/lib/hooks/product/useProductDetails";
-import { createManualBooking } from "@/lib/queries";
+import { createManualBooking, initSslCommerzPayment } from "@/lib/queries";
+import type { SslPaymentInitData } from "@/lib/types/types";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -103,10 +110,55 @@ const sslCommerzOptions = [
   "Bank",
 ];
 
+const getSslGatewayUrl = (result: {
+  data?: SslPaymentInitData;
+  GatewayPageURL?: string;
+  gateway_url?: string;
+  redirect_url?: string;
+}) =>
+  result.GatewayPageURL ||
+  result.gateway_url ||
+  result.redirect_url ||
+  result.data?.GatewayPageURL ||
+  result.data?.gateway_url ||
+  result.data?.redirect_url ||
+  "";
+
+const getCreatedBookingId = (response: unknown) => {
+  const result = response as {
+    id?: string | number;
+    booking_id?: string | number;
+    data?: {
+      id?: string | number;
+      booking_id?: string | number;
+      booking?: {
+        id?: string | number;
+        booking_id?: string | number;
+      };
+    };
+    booking?: {
+      id?: string | number;
+      booking_id?: string | number;
+    };
+  };
+  const rawId =
+    result.data?.booking_id ||
+    result.data?.id ||
+    result.data?.booking?.booking_id ||
+    result.data?.booking?.id ||
+    result.booking_id ||
+    result.id ||
+    result.booking?.booking_id ||
+    result.booking?.id;
+  const bookingId = Number(rawId);
+
+  return bookingId && !Number.isNaN(bookingId) ? bookingId : null;
+};
 
 function BookingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   const listingId = searchParams.get("id") || "";
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const { data } = useProductDetails({ id: listingId });
@@ -155,6 +207,12 @@ function BookingContent() {
     zip: "",
     country: "Bangladesh",
   });
+  const [sslCustomer, setSslCustomer] = useState({
+    bookingId: searchParams.get("bookingId") || "",
+    customerName: user?.name || "",
+    customerEmail: user?.email || "",
+    customerPhone: "",
+  });
 
   const pricing = useMemo(() => {
     const nights = getNights(checkIn, checkOut);
@@ -167,18 +225,16 @@ function BookingContent() {
   }, [checkIn, checkOut, listing.price_per_night]);
 
   const currency = listing.currency || "USD";
-  const paymentProvider =
-    paymentMethod === "manual"
-      ? "Manual card"
-      : paymentMethod === "bkash"
-        ? "bKash"
-        : "SSLCommerz";
-  const paymentOptions =
-    paymentMethod === "manual"
-      ? ["Manual card form"]
-      : paymentMethod === "bkash"
-        ? ["bKash"]
-        : sslCommerzOptions;
+
+  useEffect(() => {
+    if (!user) return;
+
+    setSslCustomer((prev) => ({
+      ...prev,
+      customerName: prev.customerName || user.name,
+      customerEmail: prev.customerEmail || user.email,
+    }));
+  }, [user]);
 
   const handleCheckInChange = (value: string) => {
     const nextCheckIn = new Date(value);
@@ -204,16 +260,74 @@ function BookingContent() {
     if (!acceptedTerms) return;
     if (paymentMethod === "bkash") return;
 
-    if (paymentMethod !== "manual") {
-      console.log("Booking payment data", {
-        payment_method: paymentMethod,
-        payment_provider: paymentProvider,
-        available_options: paymentOptions,
-        listing_id: listing.id,
-        total: pricing.total,
-        currency,
-      });
-      setSubmitted(true);
+    if (paymentMethod === "sslcommerz") {
+      try {
+        setSubmitError("");
+        setIsSubmitting(true);
+        let bookingId = Number(sslCustomer.bookingId);
+
+        if (!bookingId || Number.isNaN(bookingId)) {
+          const bookingResponse = await createManualBooking({
+            listing_id: String(listing.id),
+            payment_method: "sslcommerz",
+            check_in: toDateInputValue(checkIn),
+            check_out: toDateInputValue(checkOut),
+            adults,
+            children,
+            total_amount: pricing.total,
+            currency,
+            billing_address: {
+              street: billing.street,
+              city: billing.city,
+              zip: billing.zip,
+              country: billing.country,
+            },
+            terms_accepted: acceptedTerms,
+          });
+
+          bookingId = getCreatedBookingId(bookingResponse) || 0;
+
+          if (bookingId) {
+            setSslCustomer((prev) => ({
+              ...prev,
+              bookingId: String(bookingId),
+            }));
+          }
+        }
+
+        if (!bookingId || Number.isNaN(bookingId)) {
+          throw new Error(
+            "Booking was created, but the booking ID was not returned.",
+          );
+        }
+
+        const sslPayload = {
+          booking_id: bookingId,
+          customer_name: sslCustomer.customerName.trim(),
+          customer_email: sslCustomer.customerEmail.trim(),
+          customer_phone: sslCustomer.customerPhone.trim(),
+        };
+        const response = await initSslCommerzPayment(sslPayload);
+        const gatewayUrl = getSslGatewayUrl(response);
+
+        if (!gatewayUrl) {
+          throw new Error("Payment gateway URL was not returned by the server.");
+        }
+
+        toast.info("Redirecting to SSLCommerz secure payment...");
+        window.location.href = gatewayUrl;
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to start SSLCommerz payment";
+
+        setSubmitError(message);
+        toast.error(message);
+      } finally {
+        setIsSubmitting(false);
+      }
+
       return;
     }
 
@@ -498,36 +612,151 @@ function BookingContent() {
                 </p>
               </div>
             ) : (
-              <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                <p className="text-sm font-semibold text-gray-900">
-                  Available through SSLCommerz
-                </p>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span className="flex h-11 w-20 items-center justify-center overflow-hidden rounded-md border border-gray-200 bg-white p-2">
-                    <img
-                      src={paymentLogoPaths.visa}
-                      alt="Visa"
-                      className="max-h-full max-w-full object-contain"
-                    />
-                  </span>
-                  <span className="flex h-11 w-20 items-center justify-center rounded-md border border-gray-200 bg-white px-2">
-                    <img
-                      src={paymentLogoPaths.nagad}
-                      alt="Nagad"
-                      className="max-h-full max-w-full object-contain"
-                    />
-                  </span>
-                  {sslCommerzOptions
-                    .filter((option) => !["Nagad", "Visa"].includes(option))
-                    .map((option) => (
-                      <span
-                        key={option}
-                        className="rounded-md border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700"
-                      >
-                        {option}
-                      </span>
-                    ))}
+              <div className="mt-4 space-y-4">
+                <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+                  <div>
+                    <p className="text-sm font-semibold text-emerald-950">
+                      Pay securely with SSLCommerz
+                    </p>
+                    <p className="mt-1 text-sm text-emerald-900/80">
+                      After you confirm, you will be redirected to SSLCommerz to
+                      complete payment with card or mobile banking.
+                    </p>
+                  </div>
                 </div>
+
+                <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                  <p className="text-sm font-semibold text-gray-900">
+                    Supported payment options
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <span className="flex h-11 w-20 items-center justify-center overflow-hidden rounded-md border border-gray-200 bg-white p-2">
+                      <img
+                        src={paymentLogoPaths.visa}
+                        alt="Visa"
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    </span>
+                    <span className="flex h-11 w-20 items-center justify-center rounded-md border border-gray-200 bg-white px-2">
+                      <img
+                        src={paymentLogoPaths.nagad}
+                        alt="Nagad"
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    </span>
+                    {sslCommerzOptions
+                      .filter((option) => !["Nagad", "Visa"].includes(option))
+                      .map((option) => (
+                        <span
+                          key={option}
+                          className="rounded-md border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700"
+                        >
+                          {option}
+                        </span>
+                      ))}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5">
+                  <h3 className="text-sm font-semibold text-gray-950">
+                    Customer details for payment
+                  </h3>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Required by SSLCommerz before redirecting to the gateway.
+                  </p>
+
+                  <div className="mt-4 space-y-3">
+                    <label className="block text-sm font-semibold text-gray-800">
+                      <span className="mb-1.5 block text-xs font-normal text-gray-500">
+                        Booking ID
+                      </span>
+                      <input
+                        type="number"
+                        min={1}
+                        inputMode="numeric"
+                        value={sslCustomer.bookingId}
+                        onChange={(event) =>
+                          setSslCustomer({
+                            ...sslCustomer,
+                            bookingId: event.target.value,
+                          })
+                        }
+                        placeholder="Auto-generated if empty"
+                        className="h-12 w-full rounded-lg border border-gray-300 px-4 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                      />
+                      <span className="mt-1 block text-xs text-gray-500">
+                        Enter an existing exact booking ID, or leave empty to
+                        create one for this order.
+                      </span>
+                    </label>
+
+                    <label className="block text-sm font-semibold text-gray-800">
+                      <span className="mb-1.5 flex items-center gap-2">
+                        <User className="h-4 w-4 text-gray-500" />
+                        Full name
+                      </span>
+                      <input
+                        required
+                        type="text"
+                        value={sslCustomer.customerName}
+                        onChange={(event) =>
+                          setSslCustomer({
+                            ...sslCustomer,
+                            customerName: event.target.value,
+                          })
+                        }
+                        placeholder="Emran Hasan"
+                        className="h-12 w-full rounded-lg border border-gray-300 px-4 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                      />
+                    </label>
+
+                    <label className="block text-sm font-semibold text-gray-800">
+                      <span className="mb-1.5 flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-gray-500" />
+                        Email
+                      </span>
+                      <input
+                        required
+                        type="email"
+                        value={sslCustomer.customerEmail}
+                        onChange={(event) =>
+                          setSslCustomer({
+                            ...sslCustomer,
+                            customerEmail: event.target.value,
+                          })
+                        }
+                        placeholder="emran@example.com"
+                        className="h-12 w-full rounded-lg border border-gray-300 px-4 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                      />
+                    </label>
+
+                    <label className="block text-sm font-semibold text-gray-800">
+                      <span className="mb-1.5 flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-gray-500" />
+                        Mobile number
+                      </span>
+                      <input
+                        required
+                        type="tel"
+                        inputMode="tel"
+                        value={sslCustomer.customerPhone}
+                        onChange={(event) =>
+                          setSslCustomer({
+                            ...sslCustomer,
+                            customerPhone: event.target.value,
+                          })
+                        }
+                        placeholder="01712345678"
+                        className="h-12 w-full rounded-lg border border-gray-300 px-4 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                      />
+                      <span className="mt-1 block text-xs text-gray-500">
+                        Bangladesh mobile format (11 digits).
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
               </div>
             )}
 
@@ -566,10 +795,14 @@ function BookingContent() {
             >
               <LockKeyhole className="h-4 w-4" />
               {isSubmitting
-                ? "Creating booking..."
+                ? paymentMethod === "sslcommerz"
+                  ? "Connecting to SSLCommerz..."
+                  : "Creating booking..."
                 : paymentMethod === "bkash"
-                ? "bKash under implementation"
-                : `Confirm and pay ${formatCurrency(pricing.total, currency)}`}
+                  ? "bKash under implementation"
+                  : paymentMethod === "sslcommerz"
+                    ? `Pay ${formatCurrency(pricing.total, currency)} with SSLCommerz`
+                    : `Confirm and pay ${formatCurrency(pricing.total, currency)}`}
             </button>
           </section>
 
@@ -643,6 +876,17 @@ function BookingContent() {
                     </button>
                   </div>
                   <p className="mt-1 text-sm">{getGuestsLabel(adults, children)}</p>
+                </div>
+
+                <div className="py-4">
+                  <span className="font-semibold">Booking ID</span>
+                  <p className="mt-1 text-sm">
+                    {sslCustomer.bookingId
+                      ? `#${sslCustomer.bookingId}`
+                      : paymentMethod === "sslcommerz"
+                        ? "Will be generated for this order"
+                        : "Created after confirmation"}
+                  </p>
                 </div>
               </div>
 

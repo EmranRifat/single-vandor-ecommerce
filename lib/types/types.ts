@@ -149,20 +149,48 @@ export type ProductDetail = Item & {
 
 export type ManualBookingPayload = {
   listing_id: string;
-  payment_method: "manual";
+  payment_method: "manual" | "sslcommerz";
   check_in: string;
   check_out: string;
   adults: number;
   children: number;
   total_amount: number;
   currency: string;
-  billing_address: {
+  billing_address?: {
     street: string;
     city: string;
     zip: string;
     country: string;
   };
-  card_last4: string;
-  card_expiration: string;
+  card_last4?: string;
+  card_expiration?: string;
   terms_accepted: boolean;
+};
+
+export type SslPaymentInitPayload = {
+  booking_id: number;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+};
+
+export type SslPaymentInitData = {
+  GatewayPageURL?: string;
+  gateway_url?: string;
+  redirect_url?: string;
+  sessionkey?: string;
+};
+
+export type SslPaymentInitResponse = {
+  status?: string;
+  message?: string;
+  data?: SslPaymentInitData;
+  GatewayPageURL?: string;
+  gateway_url?: string;
+  redirect_url?: string;
+  amount?: number;
+  booking_id?: number;
+  currency?: string;
+  payment_id?: number;
+  tran_id?: string;
 };
