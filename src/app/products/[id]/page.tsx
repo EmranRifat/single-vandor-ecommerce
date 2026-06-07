@@ -1,5 +1,6 @@
 "use client";
 
+import { createManualBooking } from "@/lib/queries";
 import { useProductDetails } from "@/lib/hooks/product/useProductDetails";
 import ReviewsSection from "@/src/components/Products/ReviewsSection";
 import {
@@ -104,6 +105,37 @@ const getDefaultBookingRange = (): DateRange => {
   return { from, to };
 };
 
+const getCreatedBookingId = (response: unknown) => {
+  const result = response as {
+    id?: string | number;
+    booking_id?: string | number;
+    data?: {
+      id?: string | number;
+      booking_id?: string | number;
+      booking?: {
+        id?: string | number;
+        booking_id?: string | number;
+      };
+    };
+    booking?: {
+      id?: string | number;
+      booking_id?: string | number;
+    };
+  };
+  const rawId =
+    result.data?.booking_id ||
+    result.data?.id ||
+    result.data?.booking?.booking_id ||
+    result.data?.booking?.id ||
+    result.booking_id ||
+    result.id ||
+    result.booking?.booking_id ||
+    result.booking?.id;
+  const bookingId = Number(rawId);
+
+  return bookingId && !Number.isNaN(bookingId) ? bookingId : null;
+};
+
 const getNights = (range: DateRange) => {
   if (!range.from || !range.to) {
     return 1;
@@ -123,6 +155,8 @@ export default function ProductDetailPage() {
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [showGuests, setShowGuests] = useState(false);
+  const [isCreatingBooking, setIsCreatingBooking] = useState(false);
+  const [bookingError, setBookingError] = useState("");
   const [dateRange, setDateRange] = useState<DateRange>(getDefaultBookingRange);
   const [guestSelection, setGuestSelection] = useState({
     adults: 1,
@@ -204,6 +238,11 @@ export default function ProductDetailPage() {
   const amenities = item.amenities || [];
   const visibleAmenities = showAllAmenities ? amenities : amenities.slice(0, 6);
   const totalPrice = item.price_per_night * bookingDates.nights;
+  const bookingDiscount = Number((totalPrice * 0.15).toFixed(2));
+  const bookingTaxes = Number(((totalPrice - bookingDiscount) * 0.055).toFixed(2));
+  const bookingTotal = Number(
+    (totalPrice - bookingDiscount + bookingTaxes).toFixed(2)
+  );
   const hostName = item.host?.name || item.host_name;
   const isSuperhost = item.host?.is_superhost ?? item.is_superhost;
   const locationLabel = getLocationLabel(
@@ -253,6 +292,45 @@ export default function ProductDetailPage() {
       value: guestSelection.pets,
     },
   ];
+
+  const handleBookNow = async () => {
+    if (item.availability === false) return;
+
+    try {
+      setBookingError("");
+      setIsCreatingBooking(true);
+
+      const bookingResponse = await createManualBooking({
+        listing_id: String(item.id),
+        payment_method: "sslcommerz",
+        check_in: bookingDates.checkIn
+          ? bookingDates.checkIn.toISOString().slice(0, 10)
+          : "",
+        check_out: bookingDates.checkOut
+          ? bookingDates.checkOut.toISOString().slice(0, 10)
+          : "",
+        adults: guestSelection.adults,
+        children: guestSelection.children,
+        total_amount: bookingTotal,
+        currency: item.currency || "BDT",
+        terms_accepted: true,
+      });
+      const bookingId = getCreatedBookingId(bookingResponse);
+
+      if (!bookingId) {
+        throw new Error("Booking was created, but the booking ID was not returned.");
+      }
+
+      router.push(`${bookingUrl}&bookingId=${bookingId}`);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to create booking";
+
+      setBookingError(message);
+    } finally {
+      setIsCreatingBooking(false);
+    }
+  };
 
   return (
     <main className="bg-white">
@@ -690,12 +768,21 @@ export default function ProductDetailPage() {
 
               <button
                 type="button"
-                disabled={item.availability === false}
-                onClick={() => router.push(bookingUrl)}
+                disabled={item.availability === false || isCreatingBooking}
+                onClick={handleBookNow}
                 className="mt-6 w-full rounded-lg bg-pink-500 px-6 py-4 text-sm font-bold text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:bg-gray-300"
               >
-                {item.availability === false ? "NOT AVAILABLE" : "BOOK NOW"}
+                {item.availability === false
+                  ? "NOT AVAILABLE"
+                  : isCreatingBooking
+                    ? "CREATING BOOKING..."
+                    : "BOOK NOW"}
               </button>
+              {bookingError && (
+                <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                  {bookingError}
+                </p>
+              )}
             </div>
           </aside>
         </div>
