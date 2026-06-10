@@ -1,60 +1,6 @@
+import { ProductDetailsApiResponse, ProductDetailsPayload, ProductDetailsResponse } from "@/lib/types/types";
 import { useQuery } from "@tanstack/react-query";
 
-export interface ProductItem {
-  id: string;
-  title: string;
-  description: string;
-  price_per_night: number;
-  currency?: string;
-  city: string;
-  country: string;
-  location?:
-    | string
-    | {
-        lat?: number;
-        lng?: number;
-      };
-  address?: string;
-  image: string;
-  images?: string[];
-  category: string;
-  rating: number;
-  reviews_count: number;
-  host_name: string;
-  is_superhost: boolean;
-  host?: {
-    name?: string;
-    is_superhost?: boolean;
-  };
-  details?: {
-    guests?: number;
-    bedrooms?: number;
-    beds?: number;
-    bathrooms?: number;
-  };
-  amenities?: string[];
-  house_rules?: string[];
-  availability?: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface ProductDetailsResponse {
-  message: string;
-  success: boolean;
-  data: ProductItem | null;
-}
-
-export interface ProductDetailsPayload {
-  id: string;
-  token?: string;
-}
-
-interface ProductDetailsApiResponse {
-  product: ProductItem;
-  message: string;
-  success: boolean;
-}
 
 const fetchProductDetails = async (
   payload: ProductDetailsPayload

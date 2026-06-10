@@ -146,10 +146,20 @@ export type ProductDetail = Item & {
   };
 };
 
+export type Product = ProductDetail & {
+  name: string;
+  title?: string;
+  price: number;
+  price_per_night?: number;
+  image: string;
+  stock: number;
+  slug?: string;
+};
+
 
 export type ManualBookingPayload = {
   listing_id: string;
-  payment_method: "manual" | "sslcommerz";
+  payment_method: "manual" | "sslcommerz" | "bkash";
   check_in: string;
   check_out: string;
   adults: number;
@@ -194,3 +204,59 @@ export type SslPaymentInitResponse = {
   payment_id?: number;
   tran_id?: string;
 };
+
+export interface ProductItem {
+  id: string;
+  title: string;
+  description: string;
+  price_per_night: number;
+  currency?: string;
+  city: string;
+  country: string;
+  location?:
+    | string
+    | {
+        lat?: number;
+        lng?: number;
+      };
+  address?: string;
+  image: string;
+  images?: string[];
+  category: string;
+  rating: number;
+  reviews_count: number;
+  host_name: string;
+  is_superhost: boolean;
+  host?: {
+    name?: string;
+    is_superhost?: boolean;
+  };
+  details?: {
+    guests?: number;
+    bedrooms?: number;
+    beds?: number;
+    bathrooms?: number;
+  };
+  amenities?: string[];
+  house_rules?: string[];
+  availability?: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductDetailsResponse {
+  message: string;
+  success: boolean;
+  data: ProductItem | null;
+}
+
+export interface ProductDetailsPayload {
+  id: string;
+  token?: string;
+}
+
+export interface ProductDetailsApiResponse {
+  product: ProductItem;
+  message: string;
+  success: boolean;
+}

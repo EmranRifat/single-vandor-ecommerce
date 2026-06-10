@@ -19,6 +19,7 @@ export default function ProductCard({ item, index = 0 }: ItemCardProps) {
       <motion.div className="w-full">
         <Link href={itemPath} className="block h-full">
           <div className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-md hover:shadow-lg transition-shadow h-80">
+          
             <div className="relative w-full h-44 bg-gray-100">
               <Image
                 width={400}

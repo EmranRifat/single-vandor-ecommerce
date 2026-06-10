@@ -32,9 +32,12 @@ export default function Navbar() {
         </div>
 
         <div className="flex shrink-0 items-center gap-4">
-          <button className="hidden rounded-full px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-100 md:block">
+          <Link
+            href="/become-a-host"
+            className="hidden rounded-full px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-100 md:block"
+          >
             Become a host
-          </button>
+          </Link>
 
           {loading ? (
             <div className="h-9 w-20 animate-pulse rounded-md bg-gray-200" />

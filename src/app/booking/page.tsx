@@ -213,6 +213,10 @@ function BookingContent() {
     customerEmail: user?.email || "",
     customerPhone: "",
   });
+  const [bkashDetails, setBkashDetails] = useState({
+    mobileNumber: "",
+    transactionId: "",
+  });
 
   const pricing = useMemo(() => {
     const nights = getNights(checkIn, checkOut);
@@ -258,7 +262,6 @@ function BookingContent() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!acceptedTerms) return;
-    if (paymentMethod === "bkash") return;
 
     if (paymentMethod === "sslcommerz") {
       try {
@@ -321,6 +324,62 @@ function BookingContent() {
           error instanceof Error
             ? error.message
             : "Failed to start SSLCommerz payment";
+
+        setSubmitError(message);
+        toast.error(message);
+      } finally {
+        setIsSubmitting(false);
+      }
+
+      return;
+    }
+
+    if (paymentMethod === "bkash") {
+      try {
+        setSubmitError("");
+        setIsSubmitting(true);
+        let bookingId = Number(sslCustomer.bookingId);
+
+        if (!bookingId || Number.isNaN(bookingId)) {
+          const bookingResponse = await createManualBooking({
+            listing_id: String(listing.id),
+            payment_method: "bkash",
+            check_in: toDateInputValue(checkIn),
+            check_out: toDateInputValue(checkOut),
+            adults,
+            children,
+            total_amount: pricing.total,
+            currency,
+            billing_address: {
+              street: billing.street,
+              city: billing.city,
+              zip: billing.zip,
+              country: billing.country,
+            },
+            terms_accepted: acceptedTerms,
+          });
+
+          bookingId = getCreatedBookingId(bookingResponse) || 0;
+
+          if (bookingId) {
+            setSslCustomer((prev) => ({
+              ...prev,
+              bookingId: String(bookingId),
+            }));
+          }
+        }
+
+        if (!bookingId || Number.isNaN(bookingId)) {
+          throw new Error(
+            "Booking was created, but the booking ID was not returned.",
+          );
+        }
+
+        toast.success("Booking submitted with bKash payment selected");
+        setSubmitted(true);
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Failed to submit bKash booking";
 
         setSubmitError(message);
         toast.error(message);
@@ -604,12 +663,64 @@ function BookingContent() {
                 </div>
               </div>
             ) : paymentMethod === "bkash" ? (
-              <div className="mt-4 flex items-start gap-3 rounded-lg border border-pink-100 bg-pink-50 p-4 text-sm text-pink-950">
-                <Smartphone className="mt-0.5 h-5 w-5 shrink-0 text-pink-600" />
-                <p>
-                  bKash payment is under implementation. Please use Manual card
-                  or Other payment methods to complete this booking now.
-                </p>
+              <div className="mt-4 space-y-4">
+                <div className="flex items-start gap-3 rounded-lg border border-pink-100 bg-pink-50 p-4 text-sm text-pink-950">
+                  <Smartphone className="mt-0.5 h-5 w-5 shrink-0 text-pink-600" />
+                  <div>
+                    <p className="font-semibold">Submit booking with bKash</p>
+                    <p className="mt-1">
+                      Add the bKash number and transaction reference used for
+                      this booking.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5">
+                  <h3 className="text-sm font-semibold text-gray-950">
+                    bKash payment details
+                  </h3>
+                  <div className="mt-4 space-y-3">
+                    <label className="block text-sm font-semibold text-gray-800">
+                      <span className="mb-1.5 flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-gray-500" />
+                        bKash mobile number
+                      </span>
+                      <input
+                        required
+                        type="tel"
+                        inputMode="tel"
+                        value={bkashDetails.mobileNumber}
+                        onChange={(event) =>
+                          setBkashDetails({
+                            ...bkashDetails,
+                            mobileNumber: event.target.value,
+                          })
+                        }
+                        placeholder="01712345678"
+                        className="h-12 w-full rounded-lg border border-gray-300 px-4 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                      />
+                    </label>
+
+                    <label className="block text-sm font-semibold text-gray-800">
+                      <span className="mb-1.5 block text-xs font-normal text-gray-500">
+                        Transaction ID
+                      </span>
+                      <input
+                        required
+                        type="text"
+                        value={bkashDetails.transactionId}
+                        onChange={(event) =>
+                          setBkashDetails({
+                            ...bkashDetails,
+                            transactionId: event.target.value,
+                          })
+                        }
+                        placeholder="bKash transaction ID"
+                        className="h-12 w-full rounded-lg border border-gray-300 px-4 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                      />
+                    </label>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="mt-4 space-y-4">
@@ -788,18 +899,18 @@ function BookingContent() {
 
             <button
               type="submit"
-              disabled={
-                !acceptedTerms || paymentMethod === "bkash" || isSubmitting
-              }
+              disabled={!acceptedTerms || isSubmitting}
               className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-gray-950 px-6 py-4 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
             >
               <LockKeyhole className="h-4 w-4" />
               {isSubmitting
                 ? paymentMethod === "sslcommerz"
                   ? "Connecting to SSLCommerz..."
-                  : "Creating booking..."
+                  : paymentMethod === "bkash"
+                    ? "Submitting bKash booking..."
+                    : "Creating booking..."
                 : paymentMethod === "bkash"
-                  ? "bKash under implementation"
+                  ? `Submit bKash booking ${formatCurrency(pricing.total, currency)}`
                   : paymentMethod === "sslcommerz"
                     ? `Pay ${formatCurrency(pricing.total, currency)} with SSLCommerz`
                     : `Confirm and pay ${formatCurrency(pricing.total, currency)}`}
