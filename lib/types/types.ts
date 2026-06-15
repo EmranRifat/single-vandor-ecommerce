@@ -214,11 +214,11 @@ export interface ProductItem {
   city: string;
   country: string;
   location?:
-    | string
-    | {
-        lat?: number;
-        lng?: number;
-      };
+  | string
+  | {
+    lat?: number;
+    lng?: number;
+  };
   address?: string;
   image: string;
   images?: string[];
@@ -260,3 +260,71 @@ export interface ProductDetailsApiResponse {
   message: string;
   success: boolean;
 }
+export type HostListingItem = {
+  id: string;
+  listingId: string | null;
+  host_id: number;
+  title: string;
+  description: string;
+  status: string;
+  photos: string[];
+  rentPerNight: string;
+  bathrooms: number;
+  bedrooms: number;
+  checkIn: string;
+  checkOut: string;
+  facilities: Record<string, boolean>;
+  kitchens: number;
+  latitude: number;
+  longitude: number;
+  location: string;
+  propertyType: string;
+  availabilitySelectionMode: string;
+  availableFrom: string;
+  availableTo: string;
+  created_at: string;
+  updated_at: string;
+};
+
+
+
+export type HostListingPayload = {
+  availabilitySelectionMode: "single" | "range";
+  availableFrom: string;
+  availableTo: string;
+  bathrooms: number;
+  bedrooms: number;
+  checkIn: string;
+  checkOut: string;
+  description: string;
+  facilities: Record<string, boolean>;
+  kitchens: number;
+  latitude: number;
+  longitude: number;
+  location: string;
+  photos: File[];
+  propertyType: string;
+  rentPerNight: string;
+  title: string;
+};
+
+export type CreateHostListingVariables = {
+  payload: HostListingPayload;
+  token: string;
+};
+
+export type HostListingListResponse = {
+  message?: string;
+  success?: boolean;
+  data?: HostListingItem[];
+  listing?: unknown;
+  error?: string;
+};
+
+export type HostListingResponse = {
+  message?: string;
+  success?: boolean;
+  data?: unknown;
+  listing?: unknown;
+  error?: string;
+};

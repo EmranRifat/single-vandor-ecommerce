@@ -1,37 +1,6 @@
+import { CreateHostListingVariables, HostListingResponse } from "@/lib/types/types";
 import { useMutation } from "@tanstack/react-query";
 
-export type HostListingPayload = {
-  availabilitySelectionMode: "single" | "range";
-  availableFrom: string;
-  availableTo: string;
-  bathrooms: number;
-  bedrooms: number;
-  checkIn: string;
-  checkOut: string;
-  description: string;
-  facilities: Record<string, boolean>;
-  kitchens: number;
-  latitude: number;
-  longitude: number;
-  location: string;
-  photos: string[];
-  propertyType: string;
-  rentPerNight: string;
-  title: string;
-};
-
-type CreateHostListingVariables = {
-  payload: HostListingPayload;
-  token: string;
-};
-
-export type HostListingResponse = {
-  message?: string;
-  success?: boolean;
-  data?: unknown;
-  listing?: unknown;
-  error?: string;
-};
 
 const createHostListing = async ({
   payload,
@@ -43,18 +12,36 @@ const createHostListing = async ({
     throw new Error("NEXT_PUBLIC_BACKEND_API_URL is not defined");
   }
 
-  if (!token) {
-    throw new Error("Login token is required");
-  }
+  const formData = new FormData();
+
+  formData.append("availabilitySelectionMode", payload.availabilitySelectionMode);
+  formData.append("availableFrom", payload.availableFrom);
+  formData.append("availableTo", payload.availableTo);
+  formData.append("bathrooms", String(payload.bathrooms));
+  formData.append("bedrooms", String(payload.bedrooms));
+  formData.append("checkIn", payload.checkIn);
+  formData.append("checkOut", payload.checkOut);
+  formData.append("description", payload.description);
+  formData.append("facilities", JSON.stringify(payload.facilities));
+  formData.append("kitchens", String(payload.kitchens));
+  formData.append("latitude", String(payload.latitude));
+  formData.append("longitude", String(payload.longitude));
+  formData.append("location", payload.location);
+  formData.append("propertyType", payload.propertyType);
+  formData.append("rentPerNight", payload.rentPerNight);
+  formData.append("title", payload.title);
+
+  payload.photos.forEach((file) => {
+    formData.append("photos", file);
+  });
 
   const response = await fetch(`${baseUrl}/api/host-listings`, {
     method: "POST",
     headers: {
       Accept: "application/json",
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
     },
-    body: JSON.stringify(payload),
+    body: formData,
   });
 
   const result = (await response.json()) as HostListingResponse;
@@ -70,7 +57,12 @@ const createHostListing = async ({
 
 
 export const useHostListing = () => {
-  return useMutation<HostListingResponse, Error, CreateHostListingVariables>({
+  const mutation = useMutation<HostListingResponse, Error, CreateHostListingVariables>({
     mutationFn: createHostListing,
   });
+
+  return {
+    ...mutation,
+    isPending: mutation.isPending,
+  };
 };

@@ -1,0 +1,25 @@
+
+
+type AvailabilitySelectionMode = "single" | "range";
+
+
+export type HostListingSubmission = {
+  propertyType: string;
+  title: string;
+  rentPerNight: string;
+  checkIn: string;
+  checkOut: string;
+  availabilitySelectionMode: AvailabilitySelectionMode;
+  availableDate: string | null;
+  availableFrom: string | null;
+  availableTo: string | null;
+  suggestedAvailableFrom: string | null;
+  suggestedAvailableTo: string | null;
+  location: string;
+  latitude: number;
+  longitude: number;
+  bedrooms: number;
+  beds: number;
+  bathrooms: number;
+  photos: string[];
+};

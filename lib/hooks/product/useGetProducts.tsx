@@ -9,6 +9,7 @@ const defaultResponse: ApiResponse = {
     limit: 0,
     page: 0,
     totalPages: 0,
+    total: 0,
   },
 };
 

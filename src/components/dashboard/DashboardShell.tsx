@@ -34,10 +34,10 @@ export default function DashboardShell({
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
-      <div className="mx-auto flex w-full max-w-360 flex-col lg:flex-row">
+      <div className="mx-auto flex w-full max-w-screen-2.5xl flex-col lg:flex-row">
         <DashboardSidebar activeItem={activeItem} />
 
-        <section className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <section className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
           <Breadcrumbs className="mb-4">
             <Breadcrumbs.Item href="/">Home</Breadcrumbs.Item>
             <Breadcrumbs.Item href="/admin/dashboard">

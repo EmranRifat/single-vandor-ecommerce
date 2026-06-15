@@ -83,10 +83,14 @@ export default function LoginForm() {
           Cookies.set("user", JSON.stringify(user));
           Cookies.set("role", JSON.stringify(user?.role));
 
-          // update auth co  ntext
+          // update auth context
           setUser(user);
 
-          router.push("/products");
+          if (user?.role === "admin") {
+            router.push("/admin/dashboard");
+          } else {
+            router.push("/");
+          }
         } else {
           setError(data.message || data.error || "Login failed");
         }

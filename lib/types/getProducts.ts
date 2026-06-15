@@ -1,6 +1,6 @@
 
 
- //all product type for getProuctData and fetchingProductData 
+//all product type for getProuctData and fetchingProductData 
 
 export interface Product {
   id: string;
@@ -13,6 +13,7 @@ export interface Product {
   host_name: string;
   image: string;
   rating: number;
+  address: string;
   reviews_count: number;
   is_superhost: boolean;
   created_at: string;
@@ -24,6 +25,7 @@ export interface Pagination {
   limit: number;
   page: number;
   totalPages: number;
+  total: number;
 }
 
 export interface ApiResponse {

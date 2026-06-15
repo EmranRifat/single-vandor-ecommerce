@@ -1,42 +1,11 @@
 "use client";
 
+import { HostListingListResponse } from "@/lib/types/types";
 import { useQuery } from "@tanstack/react-query";
 import Cookies from "js-cookie";
 
-export type HostListingItem = {
-    id: string;
-    listingId: string | null;
-    host_id: number;
-    title: string;
-    description: string;
-    status: string;
-    photos: string[];
-    rentPerNight: string;
-    bathrooms: number;
-    bedrooms: number;
-    checkIn: string;
-    checkOut: string;
-    facilities: Record<string, boolean>;
-    kitchens: number;
-    latitude: number;
-    longitude: number;
-    location: string;
-    propertyType: string;
-    availabilitySelectionMode: string;
-    availableFrom: string;
-    availableTo: string;
-    created_at: string;
-    updated_at: string;
-};
 
-export type HostListingResponse = {
-    count: number;
-    data: HostListingItem[];
-    success: boolean;
-    message?: string;
-};
-
-const fetchHostListings = async (): Promise<HostListingResponse> => {
+const fetchHostListings = async (): Promise<HostListingListResponse> => {
     const baseUrl =
         process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://192.168.1.71:8080";
 
@@ -62,7 +31,7 @@ const fetchHostListings = async (): Promise<HostListingResponse> => {
         );
     }
 
-    const result = (await response.json()) as HostListingResponse;
+    const result = (await response.json()) as HostListingListResponse;
 
     if (!result.success) {
         throw new Error(result.message || "Failed to fetch host listings");
@@ -72,7 +41,7 @@ const fetchHostListings = async (): Promise<HostListingResponse> => {
 };
 
 export const useGetHostListing = () => {
-    return useQuery<HostListingResponse, Error>({
+    return useQuery<HostListingListResponse, Error>({
         queryKey: ["admin_host_listings"],
         queryFn: fetchHostListings,
         staleTime: 60 * 1000,

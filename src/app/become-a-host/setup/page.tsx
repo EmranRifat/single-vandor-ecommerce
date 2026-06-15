@@ -1,6 +1,6 @@
 "use client";
 
-import { Checkbox, Label, TimeField } from "@heroui/react";
+import { Label, TimeField } from "@heroui/react";
 import { parseTime } from "@internationalized/date";
 import {
   BedDouble,
@@ -21,13 +21,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { DateRange, DayPicker } from "react-day-picker";
-import type { TimeValue } from "react-aria-components/TimeField";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {
-  type HostListingPayload,
-  useHostListing,
-} from "@/lib/hooks/host/useHostListing";
+import type { TimeValue } from "react-aria-components/TimeField";
+import { useHostListing } from "@/lib/hooks/host/useHostListing";
+import { useAuth } from "@/lib/auth-context";
+import { HostListingPayload } from "@/lib/types/types";
 
 const propertyTypes = [
   {
@@ -50,13 +49,13 @@ const propertyTypes = [
 const propertyCopy = {
   apartment: {
     titlePlaceholder: "Apartment title",
-    rentPlaceholder: "Rent per night for StayNest guests",
+    rentPlaceholder: "Rent per night for StayNest guests (Taka)",
     bedroomLabel: "Bedroom",
     bedroomHint: "Total number of bedrooms",
   },
   room: {
     titlePlaceholder: "Room title",
-    rentPlaceholder: "Rent per night for StayNest guests",
+    rentPlaceholder: "Rent per night for StayNest guests (Taka)",
     bedroomLabel: "Room",
     bedroomHint: "Total number of rooms",
   },
@@ -69,16 +68,23 @@ const propertyCopy = {
 };
 
 const facilityOptions = [
-  { key: "ac", label: "AC" },
-  { key: "tv", label: "TV" },
-  { key: "wifi", label: "WiFi" },
-  { key: "attachedWashroom", label: "Attach washroom" },
-  { key: "balcony", label: "Balcony" },
-  { key: "carParking", label: "Car parking" },
-] as const;
+  { id: "wifi", label: "Wi-Fi" },
+  { id: "ac", label: "AC" },
+  { id: "parking", label: "Parking" },
+  { id: "balcony", label: "Balcony" },
+  { id: "attachWash", label: "Attach wash" },
+  { id: "lift", label: "Lift" },
+];
 
-type FacilityKey = (typeof facilityOptions)[number]["key"];
-type FacilityValue = "Yes" | "No";
+const defaultAvailabilityRange = () => {
+  const from = new Date();
+  from.setDate(from.getDate() + 1);
+
+  const to = new Date(from);
+  to.setDate(to.getDate() + 30);
+
+  return { from, to };
+};
 
 const formatTimeValue = (time: TimeValue) =>
   new Intl.DateTimeFormat("en-US", {
@@ -86,9 +92,6 @@ const formatTimeValue = (time: TimeValue) =>
     minute: "2-digit",
     hour12: true,
   }).format(new Date(2024, 0, 1, time.hour, time.minute));
-
-const formatApiTimeValue = (time: TimeValue) =>
-  `${String(time.hour).padStart(2, "0")}:${String(time.minute).padStart(2, "0")}`;
 
 const formatDate = (date?: Date) =>
   date?.toLocaleDateString("en-US", {
@@ -107,7 +110,7 @@ const formatDateRange = (range?: DateRange) =>
       })}`
     : range?.from
       ? formatDate(range.from) || "Select available dates"
-    : "Select available dates";
+      : "Select available dates";
 
 const formatSubmittedDate = (date: string | null) =>
   date
@@ -123,128 +126,79 @@ type AvailabilitySelectionMode = "single" | "range";
 type HostListingSubmission = {
   propertyType: string;
   title: string;
-  description: string;
   rentPerNight: string;
   checkIn: string;
   checkOut: string;
   availabilitySelectionMode: AvailabilitySelectionMode;
+  availableDate: string | null;
   availableFrom: string | null;
   availableTo: string | null;
+  suggestedAvailableFrom: string | null;
+  suggestedAvailableTo: string | null;
   location: string;
   latitude: number;
   longitude: number;
   bedrooms: number;
-  kitchens: number;
+  beds: number;
   bathrooms: number;
-  facilities: Record<FacilityKey, FacilityValue>;
   photos: string[];
 };
 
 export default function HostSetupPage() {
   const router = useRouter();
-  const { mutateAsync: createHostListing, isPending } = useHostListing();
   const [step, setStep] = useState(1);
   const [selectedType, setSelectedType] = useState("");
   const [photoPreviews, setPhotoPreviews] = useState<
-    { id: string; url: string; name: string }[]
+    { id: string; url: string; name: string; file: File }[]
   >([]);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [suggestedAvailabilityRange] = useState<DateRange>(
+    defaultAvailabilityRange,
+  );
+
   const [availabilityRange, setAvailabilityRange] = useState<
     DateRange | undefined
-  >();
-  const [submitError, setSubmitError] = useState("");
+  >(defaultAvailabilityRange);
+
+  const [submittedData, setSubmittedData] =
+    useState<HostListingSubmission | null>(null);
 
   const [form, setForm] = useState({
     title: "",
-    description: "",
     rentPerNight: "",
+    description: "",
+    facilities: {} as Record<string, boolean>,
+    kitchens: 0,
     checkInTime: parseTime("14:00"),
     checkOutTime: parseTime("11:00"),
     location: "Road 25, Banani",
     latitude: 23.7937,
     longitude: 90.4066,
     bedrooms: 0,
-    kitchens: 0,
+    beds: 0,
     bathrooms: 0,
-    facilities: {
-      ac: "No",
-      tv: "No",
-      wifi: "No",
-      attachedWashroom: "No",
-      balcony: "No",
-      carParking: "No",
-    } as Record<FacilityKey, FacilityValue>,
   });
 
   const selectedCopy =
     propertyCopy[selectedType as keyof typeof propertyCopy] ||
     propertyCopy.apartment;
+
+  const handleFacilityToggle = (facility: string) => {
+    setForm((current) => ({
+      ...current,
+      facilities: {
+        ...current.facilities,
+        [facility]: !current.facilities[facility],
+      },
+    }));
+  };
   const availabilityLabel = formatDateRange(availabilityRange);
+  const suggestionLabel = formatDateRange(suggestedAvailabilityRange);
   const availabilitySelectionMode: AvailabilitySelectionMode =
     availabilityRange?.from && !availabilityRange.to ? "single" : "range";
-  const previewData: HostListingSubmission = {
-    propertyType: selectedType || "Not selected",
-    title: form.title,
-    description: form.description,
-    rentPerNight: form.rentPerNight,
-    checkIn: formatTimeValue(form.checkInTime),
-    checkOut: formatTimeValue(form.checkOutTime),
-    availabilitySelectionMode,
-    availableFrom: availabilityRange?.from?.toISOString() || null,
-    availableTo: availabilityRange?.to?.toISOString() || null,
-    location: form.location,
-    latitude: form.latitude,
-    longitude: form.longitude,
-    bedrooms: form.bedrooms,
-    kitchens: form.kitchens,
-    bathrooms: form.bathrooms,
-    facilities: form.facilities,
-    photos: photoPreviews.map((photo) => photo.name),
-  };
-
-  const hostListingPayload: HostListingPayload = {
-    availabilitySelectionMode: previewData.availabilitySelectionMode,
-    availableFrom: previewData.availableFrom || "",
-    availableTo: previewData.availableTo || previewData.availableFrom || "",
-    bathrooms: previewData.bathrooms,
-    bedrooms: previewData.bedrooms,
-    checkIn: formatApiTimeValue(form.checkInTime),
-    checkOut: formatApiTimeValue(form.checkOutTime),
-    description: previewData.description,
-    facilities: {
-      wifi: form.facilities.wifi === "Yes",
-      parking: form.facilities.carParking === "Yes",
-      ac: form.facilities.ac === "Yes",
-      kitchen: form.kitchens > 0,
-      tv: form.facilities.tv === "Yes",
-      attachedWashroom: form.facilities.attachedWashroom === "Yes",
-      balcony: form.facilities.balcony === "Yes",
-    },
-    kitchens: previewData.kitchens,
-    latitude: previewData.latitude,
-    longitude: previewData.longitude,
-    location: previewData.location,
-    photos: photoPreviews.map((photo) => photo.url),
-    propertyType:
-      propertyTypes.find((propertyType) => propertyType.id === selectedType)
-        ?.label || selectedType,
-    rentPerNight: previewData.rentPerNight,
-    title: previewData.title,
-  };
-
-  const hostDetails = previewData;
-  const hostDetailsAvailableDates =
-    hostDetails.availabilitySelectionMode === "single"
-      ? formatSubmittedDate(hostDetails.availableFrom)
-      : `${formatSubmittedDate(hostDetails.availableFrom)} - ${formatSubmittedDate(
-          hostDetails.availableTo,
-        )}`;
-  const hostDetailsFacilities = facilityOptions
-    .filter((facility) => hostDetails.facilities[facility.key] === "Yes")
-    .map((facility) => facility.label)
-    .join(", ");
 
   const updateCounter = (
-    key: "bedrooms" | "kitchens" | "bathrooms",
+    key: "bedrooms" | "beds" | "bathrooms" | "kitchens",
     direction: "increase" | "decrease",
   ) => {
     setForm((current) => ({
@@ -256,9 +210,8 @@ export default function HostSetupPage() {
     }));
   };
 
-  const handleNext = async () => {
+  const handleNext = () => {
     if (!selectedType) return;
-    setSubmitError("");
 
     if (step === 1) {
       setStep(2);
@@ -269,50 +222,194 @@ export default function HostSetupPage() {
       setStep(3);
       return;
     }
-
-    if (!hostListingPayload.availableFrom) {
-      setSubmitError("Please select an available date.");
-      return;
-    }
-
-    if (
-      hostListingPayload.availabilitySelectionMode === "range" &&
-      !hostListingPayload.availableTo
-    ) {
-      setSubmitError("Please select an available end date.");
-      return;
-    }
-
-    const token = Cookies.get("token") || "";
-
-    try {
-      console.log("Host setup submitted data:", hostListingPayload);
-      const response = await createHostListing({
-        token,
-        payload: hostListingPayload,
-      });
-      const message = response.message || "Host listing created successfully";
-
-      toast.success(message);
-      router.push(
-        `/become-a-host/success?message=${encodeURIComponent(message)}&title=${encodeURIComponent(
-          previewData.title || "Your listing",
-        )}`,
-      );
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to create listing";
-
-      setSubmitError(message);
-      toast.error(message);
-    }
   };
 
+  const { mutateAsync: createHostListing, isPending } = useHostListing();
+  const { user } = useAuth();
+
+  const token = Cookies.get("token") || "";
+
+  const selectedFacilities = Object.entries(form.facilities)
+    .filter(([, value]) => value)
+    .map(
+      ([key]) =>
+        facilityOptions.find((option) => option.id === key)?.label || key,
+    );
+
+  const submittedDetails = submittedData
+    ? [
+        { label: "Property type", value: submittedData.propertyType },
+        {
+          label: "Listing title",
+          value: submittedData.title || "Not provided",
+        },
+        {
+          label: "Rent per night",
+          value: submittedData.rentPerNight || "Not provided",
+        },
+        { label: "Check in", value: submittedData.checkIn },
+        { label: "Check out", value: submittedData.checkOut },
+        {
+          label: "Available dates",
+          value:
+            submittedData.availabilitySelectionMode === "single"
+              ? formatSubmittedDate(submittedData.availableDate)
+              : `${formatSubmittedDate(
+                  submittedData.availableFrom,
+                )} - ${formatSubmittedDate(submittedData.availableTo)}`,
+        },
+        { label: "Location", value: submittedData.location },
+        {
+          label: "Coordinates",
+          value: `${submittedData.latitude.toFixed(
+            4,
+          )}, ${submittedData.longitude.toFixed(4)}`,
+        },
+        {
+          label: "Rooms",
+          value: `${submittedData.bedrooms} bedrooms, ${submittedData.beds} beds, ${submittedData.bathrooms} bathrooms`,
+        },
+        {
+          label: "Photos",
+          value: submittedData.photos.length
+            ? submittedData.photos.join(", ")
+            : "No photos added",
+        },
+      ]
+    : [];
+
+  const hostDetailsPreview = [
+    {
+      label: "Host",
+      value: user ? `${user.name} (${user.email})` : "Not signed in",
+    },
+    { label: "Listing title", value: form.title || "Not provided" },
+    { label: "Description", value: form.description || "Not provided" },
+    { label: "Property type", value: selectedType || "Not selected" },
+    { label: "Rent per night", value: form.rentPerNight || "Not provided" },
+    { label: "Check in", value: formatTimeValue(form.checkInTime) },
+    { label: "Check out", value: formatTimeValue(form.checkOutTime) },
+    {
+      label: "Available dates",
+      value:
+        availabilitySelectionMode === "single"
+          ? formatSubmittedDate(availabilityRange?.from?.toISOString() || null)
+          : `${formatSubmittedDate(availabilityRange?.from?.toISOString() || null)} - ${formatSubmittedDate(availabilityRange?.to?.toISOString() || null)}`,
+    },
+    { label: "Location", value: form.location },
+    {
+      label: "Coordinates",
+      value: `${form.latitude.toFixed(4)}, ${form.longitude.toFixed(4)}`,
+    },
+    {
+      label: "Facilities",
+      value: selectedFacilities.length ? selectedFacilities.join(", ") : "None",
+    },
+    {
+      label: "Rooms",
+      value: `${form.bedrooms} bedrooms, ${form.beds} beds, ${form.bathrooms} bathrooms`,
+    },
+    {
+      label: "Photos",
+      value: photoFiles.length
+        ? photoFiles.map((file) => file.name).join(", ")
+        : "No photos added",
+    },
+  ];
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await handleNext();
-  };
 
+    if (step !== 3) {
+      handleNext();
+      return;
+    }
+
+    if (!token) {
+      toast.error("Unable to submit listing. Please sign in and try again.");
+      console.error("Token missing");
+      return;
+    }
+
+    if (photoFiles.length === 0) {
+      toast.error("Please upload at least one photo before submitting.");
+      console.error("Please upload at least one photo");
+      return;
+    }
+
+    const payload: HostListingPayload = {
+      propertyType: selectedType,
+      title: form.title,
+      rentPerNight: form.rentPerNight,
+      checkIn: formatTimeValue(form.checkInTime),
+      checkOut: formatTimeValue(form.checkOutTime),
+      availabilitySelectionMode,
+      availableFrom: availabilityRange?.from?.toISOString() || "",
+      availableTo:
+        availabilitySelectionMode === "single"
+          ? availabilityRange?.from?.toISOString() || ""
+          : availabilityRange?.to?.toISOString() || "",
+      description: form.description || "",
+      facilities: form.facilities || {},
+      kitchens: form.kitchens || 0,
+      latitude: form.latitude,
+      longitude: form.longitude,
+      location: form.location,
+      bedrooms: form.bedrooms,
+      bathrooms: form.bathrooms,
+
+      // real files, not blob URLs
+      photos: photoFiles,
+    };
+
+    try {
+      const result = await createHostListing({ payload, token });
+
+      toast.success("Host listing created successfully!", {
+        autoClose: 2500,
+        onClose: () => router.push("/become-a-host/success"),
+      });
+      console.log("Created listing:", result);
+
+      setSubmittedData({
+        propertyType: selectedType,
+        title: form.title,
+        rentPerNight: form.rentPerNight,
+        checkIn: payload.checkIn,
+        checkOut: payload.checkOut,
+        availabilitySelectionMode,
+        availableDate:
+          availabilitySelectionMode === "single"
+            ? availabilityRange?.from?.toISOString() || null
+            : null,
+        availableFrom:
+          availabilitySelectionMode === "range"
+            ? availabilityRange?.from?.toISOString() || null
+            : null,
+        availableTo:
+          availabilitySelectionMode === "range"
+            ? availabilityRange?.to?.toISOString() || null
+            : null,
+        suggestedAvailableFrom:
+          suggestedAvailabilityRange.from?.toISOString() || null,
+        suggestedAvailableTo:
+          suggestedAvailabilityRange.to?.toISOString() || null,
+        location: form.location,
+        latitude: form.latitude,
+        longitude: form.longitude,
+        bedrooms: form.bedrooms,
+        beds: form.beds,
+        bathrooms: form.bathrooms,
+        photos: photoFiles.map((file) => file.name),
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to create host listing.";
+      toast.error(message);
+      console.error("Failed to create host listing", error);
+    }
+  };
   const handleBack = () => {
     if (step > 1) {
       setStep((current) => current - 1);
@@ -334,16 +431,28 @@ export default function HostSetupPage() {
     });
   };
 
+  const createPreviewId = (file: File, index: number) => {
+    const uuid =
+      typeof crypto?.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+
+    return `${file.name}-${file.lastModified}-${index}-${uuid}`;
+  };
+
   const handlePhotosChange = (files: FileList | null) => {
     if (!files) return;
 
-    const previews = Array.from(files).map((file) => ({
-      id: `${file.name}-${file.lastModified}-${crypto.randomUUID()}`,
+    const fileArray = Array.from(files);
+    const previews = fileArray.map((file, index) => ({
+      id: createPreviewId(file, index),
       url: URL.createObjectURL(file),
       name: file.name,
+      file,
     }));
 
     setPhotoPreviews((current) => [...current, ...previews]);
+    setPhotoFiles((current) => [...current, ...fileArray]);
   };
 
   const removePhoto = (id: string) => {
@@ -353,6 +462,10 @@ export default function HostSetupPage() {
       if (photo) {
         URL.revokeObjectURL(photo.url);
       }
+
+      setPhotoFiles((currentFiles) =>
+        currentFiles.filter((file) => file !== photo?.file),
+      );
 
       return current.filter((item) => item.id !== id);
     });
@@ -369,7 +482,6 @@ export default function HostSetupPage() {
 
   return (
     <main className="min-h-[calc(100vh-80px)] bg-white text-gray-950">
-      <ToastContainer position="top-right" autoClose={5000} />
       <form
         onSubmit={handleSubmit}
         className="mx-auto flex min-h-[calc(100vh-80px)] max-w-5xl flex-col px-4 sm:px-6"
@@ -486,44 +598,54 @@ export default function HostSetupPage() {
 
                 <label className="block">
                   <span className="mb-2 block text-sm font-bold text-gray-800">
-                    Description
+                    Rent per night (TK)
                   </span>
-                  <textarea
+                  <input
                     required
-                    value={form.description}
+                    inputMode="decimal"
+                    value={form.rentPerNight}
                     onChange={(event) =>
-                      setForm({ ...form, description: event.target.value })
+                      setForm({ ...form, rentPerNight: event.target.value })
                     }
-                    placeholder="Describe your property, nearby places, and anything guests should know"
-                    rows={4}
-                    className="w-full resize-none rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm font-medium outline-none transition placeholder:text-gray-400 focus:border-pink-400 focus:bg-white focus:ring-2 focus:ring-pink-100"
+                    placeholder={selectedCopy.rentPlaceholder}
+                    className="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-sm font-medium outline-none transition placeholder:text-gray-400 focus:border-pink-400 focus:bg-white focus:ring-2 focus:ring-pink-100"
                   />
                 </label>
 
                 <label className="block">
                   <span className="mb-2 block text-sm font-bold text-gray-800">
-                    Rent per night (TK)
+                    Description
                   </span>
-                  <input
-                    required
-                    type="number"
-                    inputMode="numeric"
-                    min="0"
-                    step="1"
-                    value={form.rentPerNight}
-                    onKeyDown={(event) => {
-                      if (["e", "E", "+", "-", "."].includes(event.key)) {
-                        event.preventDefault();
-                      }
-                    }}
-                    onChange={(event) => {
-                      const value = event.target.value.replace(/\D/g, "");
-                      setForm({ ...form, rentPerNight: value });
-                    }}
-                    placeholder={selectedCopy.rentPlaceholder}
-                    className="h-12 w-full rounded-lg border border-gray-300 bg-gray-50 px-4 text-sm font-medium outline-none transition placeholder:text-gray-400 focus:border-pink-400 focus:bg-white focus:ring-2 focus:ring-pink-100"
+                  <textarea
+                    value={form.description}
+                    onChange={(event) =>
+                      setForm({ ...form, description: event.target.value })
+                    }
+                    placeholder="Describe your property features"
+                    rows={4}
+                    className="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm font-medium outline-none transition placeholder:text-gray-400 focus:border-pink-400 focus:bg-white focus:ring-2 focus:ring-pink-100"
                   />
                 </label>
+
+                <div className="mt-5 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                  <p className="text-sm font-bold text-gray-950">Facilities</p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    {facilityOptions.map((option) => (
+                      <label
+                        key={option.id}
+                        className="flex cursor-pointer items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-800 transition hover:border-gray-300"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={!!form.facilities[option.id]}
+                          onChange={() => handleFacilityToggle(option.id)}
+                          className="h-4 w-4 rounded border-gray-300 text-pink-500 focus:ring-pink-500"
+                        />
+                        {option.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
 
                 <div className="grid gap-3 lg:grid-cols-2">
                   {[
@@ -575,61 +697,6 @@ export default function HostSetupPage() {
                     </div>
                   ))}
                 </div>
-
-                <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-                  <p className="text-sm font-bold text-gray-950">Facilities</p>
-                  <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    {facilityOptions.map((facility) => {
-                      const checked = form.facilities[facility.key] === "Yes";
-
-                      return (
-                        <Checkbox
-                          key={facility.key}
-                          isSelected={checked}
-                          onChange={(selected: boolean) =>
-                            setForm((current) => ({
-                              ...current,
-                              facilities: {
-                                ...current.facilities,
-                                [facility.key]: selected ? "Yes" : "No",
-                              },
-                            }))
-                          }
-                          className={({ isSelected }) =>
-                            `flex min-h-11 items-center gap-3 rounded-lg border px-3 py-2 text-sm font-bold transition ${
-                              isSelected
-                                ? "border-pink-300 bg-pink-50 text-gray-950"
-                                : "border-gray-200 bg-white text-gray-800 hover:border-pink-200 hover:bg-pink-50"
-                            }`
-                          }
-                        >
-                          {({ isSelected }) => (
-                            <>
-                              <Checkbox.Control
-                                className={`flex h-5 w-5 items-center justify-center rounded border transition ${
-                                  isSelected
-                                    ? "border-pink-500 bg-pink-500"
-                                    : "border-gray-300 bg-white"
-                                }`}
-                              >
-                                <Checkbox.Indicator
-                                  className={
-                                    isSelected
-                                      ? "text-white opacity-100"
-                                      : "text-transparent opacity-0"
-                                  }
-                                />
-                              </Checkbox.Control>
-                              <Checkbox.Content>
-                                {facility.label}
-                              </Checkbox.Content>
-                            </>
-                          )}
-                        </Checkbox>
-                      );
-                    })}
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -655,6 +722,29 @@ export default function HostSetupPage() {
                 </button>
               </div>
 
+              {/* <div className="mt-3 flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase text-slate-500">
+                    Default available dates
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-slate-700">
+                    {suggestionLabel}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAvailabilityRange({
+                      from: suggestedAvailabilityRange.from,
+                      to: suggestedAvailabilityRange.to,
+                    });
+                  }}
+                  className="self-start rounded-lg border border-teal-100 bg-white px-3 py-2 text-xs font-bold text-teal-700 transition hover:bg-teal-50 sm:self-auto"
+                >
+                  Reset default
+                </button>
+              </div> */}
+
               <div className="mt-3 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2">
                 <DayPicker
                   mode="range"
@@ -662,6 +752,12 @@ export default function HostSetupPage() {
                   onSelect={setAvailabilityRange}
                   numberOfMonths={1}
                   disabled={{ before: new Date() }}
+                  modifiers={{
+                    suggested: suggestedAvailabilityRange,
+                  }}
+                  modifiersClassNames={{
+                    suggested: "bg-teal-50 text-slate-700",
+                  }}
                   classNames={{
                     months: "flex w-full",
                     month: "w-full space-y-2",
@@ -700,6 +796,12 @@ export default function HostSetupPage() {
                     value: form.bedrooms,
                   },
                   {
+                    key: "beds" as const,
+                    label: "Beds",
+                    hint: "Total number of beds",
+                    value: form.beds,
+                  },
+                  {
                     key: "kitchens" as const,
                     label: "Kitchen",
                     hint: "Total number of kitchens",
@@ -720,7 +822,9 @@ export default function HostSetupPage() {
                       <p className="text-base font-bold text-gray-950">
                         {item.label}
                       </p>
-                      <p className="mt-0.5 text-sm text-gray-500">{item.hint}</p>
+                      <p className="mt-0.5 text-sm text-gray-500">
+                        {item.hint}
+                      </p>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -799,109 +903,36 @@ export default function HostSetupPage() {
               </div>
             </div>
 
-            <div className="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-              <div className="border-b border-gray-200 bg-gray-50 p-4">
-                <div>
-                  <p className="text-xs font-bold uppercase text-pink-500">
-                    Host details preview
-                  </p>
-                  <h2 className="mt-2 text-2xl font-bold tracking-normal text-gray-950 sm:text-3xl">
-                    {hostDetails.title || "Untitled listing"}
-                  </h2>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Review these details before submitting.
-                  </p>
-                </div>
+            <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-4">
+              <div>
+                <p className="text-sm font-bold text-gray-950">Host Summary </p>
+                <p className="mt-1 text-sm text-gray-500">
+                  Preview your listing before submitting.
+                </p>
               </div>
 
-              <div className="p-4">
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-lg bg-gray-50 p-3">
-                    <p className="text-xs font-bold uppercase text-gray-500">
-                      Rent
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {hostDetailsPreview.map((detail) => (
+                  <div
+                    key={detail.label}
+                    className={`rounded-xl border border-gray-200 bg-gray-50 p-3 ${
+                      detail.label === "Host" || detail.label === "Description"
+                        ? "sm:col-span-2"
+                        : ""
+                    }`}
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">
+                      {detail.label}
                     </p>
-                    <p className="mt-1 text-sm font-bold text-gray-950">
-                      {hostDetails.rentPerNight || "0"} TK / night
-                    </p>
+                    <p className="mt-1 text-sm text-gray-800">{detail.value}</p>
                   </div>
-                  <div className="rounded-lg bg-gray-50 p-3">
-                    <p className="text-xs font-bold uppercase text-gray-500">
-                      Check in/out
-                    </p>
-                    <p className="mt-1 text-sm font-bold text-gray-950">
-                      {hostDetails.checkIn} - {hostDetails.checkOut}
-                    </p>
-                  </div>
-                  <div className="rounded-lg bg-gray-50 p-3">
-                    <p className="text-xs font-bold uppercase text-gray-500">
-                      Availability
-                    </p>
-                    <p className="mt-1 text-sm font-bold text-gray-950">
-                      {hostDetailsAvailableDates}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-4 space-y-2 text-sm leading-6 text-gray-700">
-                  <p>
-                    Property type:{" "}
-                    <span className="font-semibold text-gray-950">
-                      {hostDetails.propertyType}
-                    </span>
-                    .
-                  </p>
-                  <p>
-                    Description:{" "}
-                    <span className="font-semibold text-gray-950">
-                      {hostDetails.description || "Not provided"}
-                    </span>
-                    .
-                  </p>
-                  <p>
-                    Location:{" "}
-                    <span className="font-semibold text-gray-950">
-                      {hostDetails.location}
-                    </span>{" "}
-                    ({hostDetails.latitude.toFixed(4)},{" "}
-                    {hostDetails.longitude.toFixed(4)}).
-                  </p>
-                  <p>
-                    Rooms:{" "}
-                    <span className="font-semibold text-gray-950">
-                      {hostDetails.bedrooms} bedrooms, {hostDetails.kitchens}{" "}
-                      kitchens, {hostDetails.bathrooms} bathrooms
-                    </span>
-                    .
-                  </p>
-                  <p>
-                    Facilities:{" "}
-                    <span className="font-semibold text-gray-950">
-                      {hostDetailsFacilities || "No facilities selected"}
-                    </span>
-                    .
-                  </p>
-                  <p>
-                    Photos:{" "}
-                    <span className="font-semibold text-gray-950">
-                      {hostDetails.photos.length
-                        ? hostDetails.photos.join(", ")
-                        : "No photos added"}
-                    </span>
-                    .
-                  </p>
-                </div>
+                ))}
               </div>
             </div>
-
-            {submitError && (
-              <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-                {submitError}
-              </p>
-            )}
           </section>
         )}
 
-        <footer className="fixed inset-x-0 bottom-0 border-t-4 border-gray-950 bg-white">
+        <footer className="fixed inset-x-0 bottom-0 border-t-2 border-gray-950 bg-white">
           <div className="mx-auto flex h-24 max-w-5xl items-center justify-between px-4 sm:px-6">
             {step === 1 ? (
               <Link
@@ -926,12 +957,13 @@ export default function HostSetupPage() {
               onClick={step === 1 ? handleNext : undefined}
               className="inline-flex h-14 min-w-36 items-center justify-center gap-2 rounded-lg bg-pink-500 px-8 text-sm font-bold text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:bg-gray-300"
             >
-              {isPending ? "Submitting..." : step === 3 ? "Submit" : "Next"}
+              {step === 3 ? "Submit" : "Next"}
               {step !== 3 && <ChevronRight className="h-4 w-4" />}
             </button>
           </div>
         </footer>
       </form>
+      <ToastContainer position="top-right" autoClose={5000} />
     </main>
   );
 }

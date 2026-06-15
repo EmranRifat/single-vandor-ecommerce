@@ -13,6 +13,7 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 const nextConfig = {
   reactStrictMode: true,
   output: "standalone",
+  // allowedDevOrigins: ["192.168.1.71", "localhost"],
   images: {
     remotePatterns: [
       {
