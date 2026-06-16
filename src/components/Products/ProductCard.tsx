@@ -13,19 +13,23 @@ interface ItemCardProps {
 
 export default function ProductCard({ item, index = 0 }: ItemCardProps) {
   const itemPath = `/products/${item.id}`;
+  const isLocalBackendImage = item.image?.includes("192.168.1.71:8080");
 
+  // console.log("cart data >",item)
   return (
     <>
       <motion.div className="w-full">
         <Link href={itemPath} className="block h-full">
           <div className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-md hover:shadow-lg transition-shadow h-80">
-          
             <div className="relative w-full h-44 bg-gray-100">
               <Image
                 width={400}
                 height={300}
                 src={item.image}
                 alt={item.title}
+                  unoptimized={isLocalBackendImage}
+
+                loading="eager"
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
 
@@ -41,7 +45,6 @@ export default function ProductCard({ item, index = 0 }: ItemCardProps) {
             </div>
 
             <div className="flex flex-1 flex-col p-2">
-             
               <div className="flex items-start gap-2 mb-2">
                 <h3 className="text-sm font-semibold text-gray-900 flex-1">
                   {item.title}
@@ -50,9 +53,11 @@ export default function ProductCard({ item, index = 0 }: ItemCardProps) {
                   {item.category}
                 </span>
               </div>
-               <h3 className="text-sm text-gray-800 flex-1">
-                              {item.city}, {item.country}
-                            </h3>
+              <h3 className="text-sm text-gray-800 flex-1">
+                {item.city && item.country
+                  ? `${item.city}, ${item.country}`
+                  : item.address || "-"}
+              </h3>
 
               <div className="mt-auto flex items-end justify-between">
                 <div className="flex flex-col">

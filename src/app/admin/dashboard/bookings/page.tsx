@@ -1,4 +1,4 @@
-import BookingsView from "@/src/components/dashboard/BookingsView";
+import BookingsView from "@/src/components/dashboard/ListingsView";
 import DashboardShell from "@/src/components/dashboard/DashboardShell";
 
 export default function AdminBookingsPage() {

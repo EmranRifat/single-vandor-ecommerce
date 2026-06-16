@@ -3,17 +3,14 @@
 
 const withPWA = require("@ducanh2912/next-pwa").default({
   dest: "public",
-  cacheOnFrontEndNav: true,
-  aggressiveFrontEndNavCaching: true,
-  reloadOnOnline: true,
-  swcMinify: true,
   disable: process.env.NODE_ENV === "development",
 });
 
 const nextConfig = {
   reactStrictMode: true,
-  output: "standalone",
-  // allowedDevOrigins: ["192.168.1.71", "localhost"],
+
+  allowedDevOrigins: ["192.168.1.71"],
+
   images: {
     remotePatterns: [
       {
@@ -22,12 +19,21 @@ const nextConfig = {
         pathname: "/**",
       },
       {
-        protocol: "https",
-        hostname: "example.com",
-        pathname: "/**",
+        protocol: "http",
+        hostname: "192.168.1.71",
+        port: "8080",
+        pathname: "/uploads/**",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "8080",
+        pathname: "/uploads/**",
       },
     ],
   },
 };
 
-module.exports = withPWA(nextConfig);
+module.exports = process.env.NODE_ENV === "development"
+  ? nextConfig
+  : withPWA(nextConfig);

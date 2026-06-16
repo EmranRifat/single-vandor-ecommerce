@@ -17,12 +17,18 @@ const sidebarItems = [
     href: "/admin/dashboard",
   },
   {
-    key: "listings",
-    label: "Listings",
+    key: "host_listings",
+    label: "Host Listings",
     icon: BedDouble,
-    href: "/admin/dashboard/listings",
+    href: "/admin/dashboard/host_listings",
   },
   {
+    key: "listings",
+    label: " Listings",
+    icon: CalendarCheck,
+    href: "/admin/dashboard/listings",
+  },
+   {
     key: "bookings",
     label: "Bookings",
     icon: CalendarCheck,
@@ -40,12 +46,7 @@ const sidebarItems = [
     icon: Star,
     href: "/admin/dashboard/reviews",
   },
-  {
-    key: "messages",
-    label: "Messages",
-    icon: MessageSquare,
-    href: "/admin/dashboard/messages",
-  },
+ 
   {
     key: "settings",
     label: "Settings",

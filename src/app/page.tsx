@@ -45,7 +45,7 @@ export default function Home() {
   
   const listings = data?.listings || [];
   const visibleListings = showAll ? listings : listings.slice(0,8);
-  // console.log("listings-->", listings);
+  console.log("listings-->", listings);
   // console.log("visibleListings-->", visibleListings);
   // console.log("showAll-->", showAll);
 

@@ -1,5 +1,5 @@
-import AdminDashboardPage from "../admin/dashboard/page";
+// import AdminDashboardPage from "../admin/dashboard/page";
 
-export default function DashboardPage() {
-  return <AdminDashboardPage />;
-}
+// export default function DashboardPage() {
+//   return <AdminDashboardPage />;
+// }
