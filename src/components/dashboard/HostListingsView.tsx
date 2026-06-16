@@ -62,7 +62,7 @@ const getStatusClass = (status?: string) => {
   return "bg-slate-50 text-slate-600";
 };
 
-export default function ListingsView() {
+export default function HostListingView() {
   const { data, isLoading, isError, error } = useGetHostListing();
 
   const [searchTerm, setSearchTerm] = useState("");

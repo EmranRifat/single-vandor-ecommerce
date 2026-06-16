@@ -35,7 +35,7 @@ const propertyTypes = [
     Icon: Building,
   },
   {
-    id: "room",
+    id: "home",
     label: "Room",
     Icon: BedDouble,
   },
@@ -236,47 +236,6 @@ export default function HostSetupPage() {
         facilityOptions.find((option) => option.id === key)?.label || key,
     );
 
-  const submittedDetails = submittedData
-    ? [
-        { label: "Property type", value: submittedData.propertyType },
-        {
-          label: "Listing title",
-          value: submittedData.title || "Not provided",
-        },
-        {
-          label: "Rent per night",
-          value: submittedData.rentPerNight || "Not provided",
-        },
-        { label: "Check in", value: submittedData.checkIn },
-        { label: "Check out", value: submittedData.checkOut },
-        {
-          label: "Available dates",
-          value:
-            submittedData.availabilitySelectionMode === "single"
-              ? formatSubmittedDate(submittedData.availableDate)
-              : `${formatSubmittedDate(
-                  submittedData.availableFrom,
-                )} - ${formatSubmittedDate(submittedData.availableTo)}`,
-        },
-        { label: "Location", value: submittedData.location },
-        {
-          label: "Coordinates",
-          value: `${submittedData.latitude.toFixed(
-            4,
-          )}, ${submittedData.longitude.toFixed(4)}`,
-        },
-        {
-          label: "Rooms",
-          value: `${submittedData.bedrooms} bedrooms, ${submittedData.beds} beds, ${submittedData.bathrooms} bathrooms`,
-        },
-        {
-          label: "Photos",
-          value: submittedData.photos.length
-            ? submittedData.photos.join(", ")
-            : "No photos added",
-        },
-      ]
-    : [];
 
   const hostDetailsPreview = [
     {
@@ -745,6 +704,7 @@ export default function HostSetupPage() {
                 </button>
               </div> */}
 
+             
               <div className="mt-3 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2">
                 <DayPicker
                   mode="range"

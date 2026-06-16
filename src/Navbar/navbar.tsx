@@ -34,7 +34,7 @@ export default function Navbar() {
         <div className="flex shrink-0 items-center gap-4">
           <Link
             href="/become-a-host"
-            className="hidden rounded-full px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-100 md:block"
+            className="hidden md:block rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 px-3 py-2 text-sm font-semibold text-white shadow-md hover:shadow-lg transition-all hover:scale-105"
           >
             Become a host
           </Link>

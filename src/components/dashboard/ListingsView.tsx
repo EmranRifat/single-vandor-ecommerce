@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { Pagination as HeroPagination } from "@heroui/react";
+import { Trash2 } from "lucide-react";
 import Filters from "./filters";
 import { useGetProductData } from "@/lib/hooks/product/useGetProducts";
 import { Product } from "@/lib/types/getProducts";
+import { useDeleteHostListing } from "@/lib/hooks/dashboard/useDeleteHostListing";
 
 const formatDate = (value?: string) => {
   if (!value) return "-";
@@ -71,12 +73,13 @@ const getPageNumbers = (page: number, totalPages: number) => {
   return pages;
 };
 
-export default function BookingsView() {
+export default function ListingsView() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const selectedCategoryName = undefined;
   const selectedCategoryId = undefined;
@@ -88,6 +91,8 @@ export default function BookingsView() {
   };
 
   const { data, isLoading, isError, error } = useGetProductData(payload);
+  const { mutateAsync: deleteListing, isPending: isDeleting } =
+    useDeleteHostListing();
   const listings = useMemo<(Product & { status?: string })[]>(
     () => data?.listings ?? [],
     [data],
@@ -128,6 +133,25 @@ export default function BookingsView() {
       return searchMatch && statusMatch && typeMatch;
     });
   }, [listings, searchTerm, statusFilter, typeFilter]);
+
+  const handleDeleteListing = async (id: string) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this listing?",
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDeletingId(id);
+      await deleteListing({ id });
+      alert("Listing deleted successfully.");
+    } catch (err) {
+      console.error("Failed to delete listing:", err);
+      alert("Failed to delete listing. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <div className="mt-8 space-y-4">
@@ -193,9 +217,10 @@ export default function BookingsView() {
                 <th className="px-4 py-3">Address</th>
                 <th className="px-4 py-3">Host</th>
                 <th className="px-4 py-3">Price</th>
-                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Status </th>
                 <th className="px-4 py-3">Created</th>
                 <th className="px-4 py-3">Updated</th>
+                <th className="px-4 py-3 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -253,7 +278,7 @@ export default function BookingsView() {
                       {item.host_name || "-"}
                     </td>
                     <td className="px-4 py-4 font-medium text-slate-900">
-                       ৳{Number(item.price_per_night || 0).toLocaleString()}
+                      ৳{Number(item.price_per_night || 0).toLocaleString()}
                     </td>
                     <td className="px-4 py-4">
                       <span
@@ -267,6 +292,18 @@ export default function BookingsView() {
                     </td>
                     <td className="px-4 py-4 text-slate-600">
                       {formatDate(item.updated_at)}
+                    </td>
+                    <td className="px-4 py-4 text-right">
+                      <button
+                        type="button"
+                        aria-label={`Delete ${item.title || "listing"}`}
+                        disabled={isDeleting && deletingId === item.id}
+                        onClick={() => handleDeleteListing(item.id)}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-rose-200 bg-rose-50 text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        title="Delete listing"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </td>
                   </tr>
                 );
