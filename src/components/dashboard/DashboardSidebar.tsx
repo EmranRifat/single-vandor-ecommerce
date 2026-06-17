@@ -48,6 +48,13 @@ const sidebarItems = [
   },
  
   {
+    key: "logs",
+    label: "Logs",
+    icon: Star,
+    href: "/admin/dashboard/logs",
+  },
+ 
+  {
     key: "settings",
     label: "Settings",
     icon: Settings,

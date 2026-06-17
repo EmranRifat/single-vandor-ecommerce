@@ -328,3 +328,39 @@ export type HostListingResponse = {
   listing?: unknown;
   error?: string;
 };
+
+export type ApiLogItem = {
+  id: number;
+  method: string;
+  operation: string;
+  path: string;
+  query: string;
+  statusCode: number;
+  status: string;
+  message: string;
+  isError: boolean;
+  errorType: string;
+  ipAddress: string;
+  userAgent: string;
+  userId: string;
+  userEmail: string;
+  latencyMs: number;
+  errorMessage: string;
+  createdAt: string;
+};
+
+export type ApiLogsPayload = {
+  page?: number;
+  limit?: number;
+};
+
+export type ApiLogsResponse = {
+  count: number;
+  data: ApiLogItem[];
+  limit: number;
+  page: number;
+  success: boolean;
+  total: number;
+  message?: string;
+  error?: string;
+};
