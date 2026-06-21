@@ -86,10 +86,18 @@ export default function LoginForm() {
           // update auth context
           setUser(user);
 
+          const redirect = new URLSearchParams(window.location.search).get(
+            "redirect",
+          );
+          const redirectTo =
+            redirect && redirect.startsWith("/") && !redirect.startsWith("//")
+              ? redirect
+              : "/";
+
           if (user?.role === "admin") {
             router.push("/admin/dashboard");
           } else {
-            router.push("/");
+            router.push(redirectTo);
           }
         } else {
           setError(data.message || data.error || "Login failed");

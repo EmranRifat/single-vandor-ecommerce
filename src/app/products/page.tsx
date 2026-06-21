@@ -8,22 +8,23 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import Cookies from "js-cookie";
 import ItemCard from "@/src/components/Products/ProductCard";
-import { ItemListPayload, Category } from "@/lib/types/types";
+import { Category } from "@/lib/types/types";
 import { useGetProductData } from "@/lib/hooks/product/useGetProducts";
 import { Categories } from "@/src/components/Categories";
-import { Product } from "@/lib/types/getProducts";
-import SearchBar from "@/src/components/Products/SearchBar";
+import { GetProductsPayload, Product } from "@/lib/types/getProducts";
 
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const categoryId = searchParams.get("category") || "";
+  const city = searchParams.get("city") || "";
   const token = Cookies.get("token") || "";
 
-  const payload: ItemListPayload = {
+  const payload: GetProductsPayload = {
     page: 1,
     limit: 10,
     token,
     category: categoryId || undefined,
+    city: city || undefined,
   };
 
   const { data, isLoading, isError } = useGetProductData(payload);
@@ -54,12 +55,20 @@ export default function ProductsPage() {
             <ChevronRight className="w-4 h-4" />
 
             <span className="text-gray-900 font-semibold">
-              {currentCategory ? currentCategory.name : "All Products"}
+              {city
+                ? `Stays in ${city}`
+                : currentCategory
+                  ? currentCategory.name
+                  : "All Products"}
             </span>
           </div>
 
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            {currentCategory ? currentCategory.name : "All Products"}
+            {city
+              ? `Stays in ${city}`
+              : currentCategory
+                ? currentCategory.name
+                : "All Products"}
           </h1>
         </motion.div>
 

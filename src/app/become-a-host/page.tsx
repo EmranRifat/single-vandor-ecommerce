@@ -1,7 +1,26 @@
-import { ArrowRight, MessageCircle, Phone, Wallet } from "lucide-react";
-import Link from "next/link";
+"use client";
+
+import { ArrowRight, Phone, Wallet } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import HostChatWidget from "@/src/components/host/HostChatWidget";
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 export default function BecomeAHostPage() {
+  const router = useRouter();
+  const { user, loading } = useAuth();
+
+  const handleStartHosting = () => {
+    const token = Cookies.get("token");
+
+    if (!user && !token) {
+      router.push("/login?redirect=/become-a-host/setup");
+      return;
+    }
+
+    router.push("/become-a-host/setup");
+  };
+
   return (
     <main className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 px-4 text-gray-950">
       <section className="mx-auto flex min-h-[calc(100vh-80px)] max-w-5xl flex-col items-center justify-center pb-24 pt-16 text-center">
@@ -21,25 +40,19 @@ export default function BecomeAHostPage() {
           our hassle-free platform.
         </p>
 
-        <div className="mt-14 flex w-full max-w-2xl flex-col justify-center gap-4 sm:flex-row">
-          <Link
-            href="/become-a-host/setup"
-            className="inline-flex h-16 items-center justify-center gap-4 rounded-xl bg-pink-500 px-8 text-lg font-bold text-white shadow-lg shadow-pink-500/20 transition hover:bg-pink-600"
+        <div className="mt-14 flex w-full max-w-2xl flex-col items-center justify-center gap-4 sm:flex-row">
+          <button
+            type="button"
+            onClick={handleStartHosting}
+            disabled={loading}
+            className="inline-flex h-16 w-full items-center justify-center gap-4 rounded-xl bg-pink-500 px-8 text-lg font-bold text-white shadow-lg shadow-pink-500/20 transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
           >
             <Phone className="h-5 w-5" />
             Start Hosting Now
             <ArrowRight className="h-5 w-5" />
-          </Link>
+          </button>
 
-          <a
-            href="https://wa.me/"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex h-16 items-center justify-center gap-4 rounded-xl border border-gray-200 bg-white px-8 text-lg font-bold text-gray-800 shadow-md transition hover:bg-gray-50"
-          >
-            <MessageCircle className="h-5 w-5" />
-            Chat on WhatsApp
-          </a>
+          <HostChatWidget />
         </div>
       </section>
     </main>
