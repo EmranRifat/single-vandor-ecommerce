@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
+import { Spinner } from "@heroui/react";
+
 import { getCategories } from "@/lib/queries";
 import { Product } from "@/lib/types/getProducts";
 import { Category } from "@/lib/types/types";
@@ -11,9 +12,9 @@ import { useGetProductData } from "@/lib/hooks/product/useGetProducts";
 import ProductCard from "../components/Products/ProductCard";
 import Footer from "../components/common/footer/footer";
 import TabsComponent from "../components/common/Tabs/tabs";
-import { Spinner } from "@heroui/react";
+import Navbar from "../components/Navbar/index";
 
-export default function Home() {
+export default function HomeClient() {
   const [activeCategory, setActiveCategory] = useState("apartments");
   const [showAll, setShowAll] = useState(false);
 
@@ -21,6 +22,7 @@ export default function Home() {
     queryKey: ["categories"],
     queryFn: getCategories,
   });
+
 
   const tabCategoryNameMap: Record<string, string> = {
     apartments: "Apartment",
@@ -33,7 +35,8 @@ export default function Home() {
 
   const selectedCategoryId = categories.find(
     (category: Category) =>
-      category.name.toLowerCase() === selectedCategoryName.toLowerCase())?.id;
+      category.name.toLowerCase() === selectedCategoryName.toLowerCase()
+  )?.id;
 
   const payload = {
     page: 1,
@@ -41,17 +44,17 @@ export default function Home() {
     category: selectedCategoryId ?? selectedCategoryName,
   };
 
-  const { data, isLoading , isFetching, isError, error} = useGetProductData(payload);
-  
+  const { data, isLoading, isFetching, isError, error } =
+    useGetProductData(payload);
+
   const listings = data?.listings || [];
-  const visibleListings = showAll ? listings : listings.slice(0,8);
-  console.log("listings-->", listings);
-  // console.log("visibleListings-->", visibleListings);
-  // console.log("showAll-->", showAll);
+  const visibleListings = showAll ? listings : listings.slice(0, 8);
 
   return (
     <div className="min-h-screen">
       <div className="flex flex-col items-center justify-center text-center py-6 bg-gray-50">
+        {/* <Navbar /> */}
+
         <div className="w-fit">
           <TabsComponent
             activeTab={activeCategory}
@@ -59,10 +62,10 @@ export default function Home() {
           />
         </div>
       </div>
-     
+
       {isLoading || isFetching ? (
         <div className="flex items-center justify-center py-20">
-          <Spinner color="success" />{" "}
+          <Spinner color="success" />
           <p className="text-gray-500 text-lg">Loading ...</p>
         </div>
       ) : isError ? (
@@ -78,6 +81,7 @@ export default function Home() {
           </p>
         </div>
       ) : null}
+
       <section className="py-10 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -90,21 +94,23 @@ export default function Home() {
               {activeCategory === "apartments"
                 ? "Apartments"
                 : activeCategory === "hotels"
-                  ? "Hotels"
-                  : "Rooms"}
+                ? "Hotels"
+                : "Rooms"}
             </h2>
           </motion.div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {visibleListings.map((product: Product, index: number) => (
               <ProductCard key={product.id} item={product} index={index} />
             ))}
           </div>
-          {listings.length > 12 && !showAll ? (
+
+          {listings.length > 8 && !showAll ? (
             <div className="flex justify-center mt-10">
               <button
                 type="button"
                 onClick={() => setShowAll(true)}
-                className="px-6 py-3 rounded-full bg-linear-to-r from-orange-500 to-red-600 text-white font-medium shadow-lg hover:scale-105 hover:from-blue-600 hover:to-red-600 transition-all duration-300"
+                className="px-6 py-3 rounded-full bg-linear-to-r from-orange-500 to-red-600 text-white font-medium shadow-lg hover:scale-105 transition-all duration-300"
               >
                 See more
               </button>

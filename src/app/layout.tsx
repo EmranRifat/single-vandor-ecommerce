@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import { Providers } from "./providers";
 import { AuthProvider } from "@/lib/auth-context";
 import ConditionalNavbar from "@/src/components/dashboard/ConditionalNavbar";
+import Navbar from "../components/Navbar/index";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,7 +39,8 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         <AuthProvider>
           <Providers>
-            <ConditionalNavbar />
+            {/* <ConditionalNavbar /> */}
+            <Navbar/>
             {children}
           </Providers>
         </AuthProvider>

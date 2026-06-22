@@ -23,13 +23,13 @@ export default function BecomeAHostPage() {
 
   return (
     <main className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 px-4 text-gray-950">
-      <section className="mx-auto flex min-h-[calc(100vh-80px)] max-w-5xl flex-col items-center justify-center pb-24 pt-16 text-center">
+      <section className="mx-auto flex min-h-[calc(80vh-50px)] max-w-5xl flex-col items-center justify-center pb-24 pt-4 text-center">
         <div className="inline-flex items-center gap-3 rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-medium text-gray-800 shadow-sm">
           <Wallet className="h-4 w-4 text-gray-950" />
           <span>Start earning from your property today</span>
         </div>
 
-        <h1 className="mt-8 max-w-4xl text-5xl font-bold leading-tight tracking-normal text-gray-950 sm:text-6xl lg:text-7xl">
+        <h1 className="mt-4 max-w-4xl text-5xl font-bold leading-tight tracking-normal text-gray-950 sm:text-6xl lg:text-7xl">
           Turn Your Property Into{" "}
           <span className="block text-pink-500">Passive Income</span>
         </h1>

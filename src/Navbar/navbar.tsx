@@ -7,11 +7,11 @@ import { useRouter } from "next/navigation";
 import SearchBar from "../components/Products/SearchBar";
 
 export default function Navbar() {
-  const { user, logout, loading } = useAuth();
+  const { user, logout_user, loading } = useAuth();
   const router = useRouter();
 
   const handleLogout = () => {
-    logout();
+    logout_user();
     router.push("/");
   };
 

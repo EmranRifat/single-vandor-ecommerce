@@ -100,21 +100,23 @@ export default function SearchBar() {
   };
 
   return (
-    <form onSubmit={handleSearch} className="flex justify-center">
+    <form onSubmit={handleSearch} className="flex w-full min-w-0 justify-center">
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-5xl"
+        className="w-full min-w-0 max-w-5xl"
       >
-        <div className="flex items-center overflow-hidden rounded-full border border-gray-200 bg-white shadow-lg">
-          <label className="flex min-w-0 flex-1 cursor-text flex-col px-5 py-3 hover:bg-gray-100">
-            <span className="text-xs font-semibold text-gray-950">Where</span>
+        <div className="flex min-w-0 items-center overflow-hidden rounded-full border border-gray-200 bg-white shadow-lg">
+          <label className="flex min-w-0 flex-1 cursor-text flex-col px-4 py-2 hover:bg-gray-100 sm:px-5 sm:py-3">
+            <span className="hidden text-xs font-semibold text-gray-950 sm:block">
+              Where
+            </span>
 
             <input
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
               placeholder="Search city"
-              className="w-full bg-transparent text-sm text-gray-600 outline-none"
+              className="h-9 w-full bg-transparent text-sm text-gray-600 outline-none sm:h-auto"
             />
           </label>
 
@@ -215,7 +217,7 @@ export default function SearchBar() {
           <button
             type="submit"
             aria-label="Search listings"
-            className="m-2 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#FF385C] text-white transition hover:scale-105"
+            className="m-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FF385C] text-white transition hover:scale-105 sm:m-2 sm:h-12 sm:w-12"
           >
             <Search size={18} />
           </button>

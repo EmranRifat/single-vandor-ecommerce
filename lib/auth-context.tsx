@@ -8,7 +8,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   setUser: () => {},
-  logout: () => {},
+  logout_user: () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const logout = () => {
+  const logout_user = () => {
     Cookies.remove("token");
     Cookies.remove("user");
     Cookies.remove("role");
@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, setUser, logout }}>
+    <AuthContext.Provider value={{ user, loading, setUser, logout_user }}>
       {children}
     </AuthContext.Provider>
   );

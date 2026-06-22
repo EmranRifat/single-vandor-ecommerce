@@ -27,7 +27,7 @@ export type AuthContextType = {
   user: User | null;
   loading: boolean;
   setUser: (user: User | null) => void;
-  logout: () => void;
+  logout_user: () => void;
 };
 
 export type ApiResponse<T> = {
