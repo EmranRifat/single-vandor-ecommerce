@@ -1,8 +1,14 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import { Home } from "lucide-react";
-import Link from "next/link";
+ <Link href="/" className="flex shrink-0 items-center gap-2">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-500 text-white">
+            <Home size={22} strokeWidth={2.4} />
+          </span>
+          <span className="text-2xl font-bold tracking-tight text-gray-950">
+            StayNest
+          </span>
+        </Link>import Link from "next/link";
 import { useRouter } from "next/navigation";
 import SearchBar from "../components/Products/SearchBar";
 

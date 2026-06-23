@@ -9,14 +9,15 @@ import enDictionary from "@/dictionaries/en.json";
 import bnDictionary from "@/dictionaries/bn.json";
 import { Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ThemeToggler from "./ThemeToggler";
 import SearchBar from "../Products/SearchBar";
 
 export default function Navbar() {
-  const { user, loading, setUser } = useAuth();
+  const { user, loading, setUser, logout_user } = useAuth();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const lang = (Cookies.get("lang") === "bn" ? "bn" : "en") as Locale;
   const dictionary = lang === "bn" ? bnDictionary : enDictionary;
   const { common, login } = dictionary;
@@ -33,21 +34,37 @@ export default function Navbar() {
   };
 
   const handleLogout = () => {
-    Cookies.remove("token");
-    Cookies.remove("user");
-    Cookies.remove("role");
-    Cookies.remove("access");
-    Cookies.remove("refresh");
-    setUser(null);
+    logout_user();
     router.push("/login");
   };
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node)
+      ) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+    };
+  }, [isMenuOpen]);
 
   return (
     <nav className="relative z-50 w-full border-b border-gray-200 bg-white shadow-sm">
       <div className="mx-auto flex min-h-20 w-full max-w-7xl items-center justify-between gap-3 px-4 lg:px-8">
         <Link href="/" className="flex min-w-0 shrink-0 items-center py-3 sm:hidden">
           <Image
-            src="/static/images/logo/logo-icon-dark.svg"
+            src="/Home_icon_red-1-removebg-preview.png"
             alt="logo"
             width={40}
             height={30}
@@ -59,29 +76,41 @@ export default function Navbar() {
           </p>
         </Link>
 
-        <Link
-          href="/dashboard"
-          className="hidden min-w-0 shrink-0 items-center py-3 sm:flex"
-        >
-          <Image
-            src="/static/images/logo/logo-icon-dark.svg"
-            alt="logo"
-            width={40}
-            height={30}
-            className=""
-          />
+<Link
+  href="/"
+  className="hidden min-w-0 shrink-0 items-center gap-1 py-3 sm:flex"
+>
+  <Image
+    src="/Home_icon_red-1-removebg-preview.png"
+    alt="logo"
+    width={42}
+    height={42}
+    className="shrink-0"
+  />
 
-          <p
-            className={`ml-2 w-full text-start ${
-              lang == "bn" ? "ss:text-2xl" : "ss:text-md"
-            } ${lang == "bn" ? "xxs:text-2xl" : "xxs:text-md"} ${
-              lang == "bn" ? "xs:text-2xl" : "xs:text-xl"
-            }  sm:text-xl md:text-2xl lg:text-2xl font-semibold text-gray-900 dark:text-white`}
-          >
-            {common.logo_text}
-          </p>
-        </Link>
-        <div  className="mx-auto max-w-4xl px-6 lg:px-10">
+  <p
+    className={`
+      ${
+        lang === "bn" ? "ss:text-2xl xxs:text-2xl xs:text-2xl" : "ss:text-lg xxs:text-lg xs:text-xl"
+      }
+      sm:text-xl
+      md:text-2xl
+      lg:text-2xl
+      font-extrabold
+      tracking-tight
+      leading-none
+      bg-linear-to-r
+      from-red-700
+      via-red-500
+      to-orange-500
+      bg-clip-text
+      text-transparent
+    `}
+  >
+    {common.logo_text}
+  </p>
+</Link>
+        <div className="mx-auto hidden max-w-4xl px-6 md:block lg:px-10">
           <SearchBar />
         </div>
 
@@ -93,7 +122,7 @@ export default function Navbar() {
             Become a host
           </Link>
 
-          <div className="relative shrink-0">
+          <div ref={menuRef} className="relative shrink-0">
             <button
               type="button"
               onClick={() => setIsMenuOpen((open) => !open)}

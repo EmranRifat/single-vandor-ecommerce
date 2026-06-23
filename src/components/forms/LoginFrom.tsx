@@ -73,22 +73,21 @@ export default function LoginForm() {
           const token = data?.token;
           const user = data?.user;
 
-          // if (!token || !user) {
-          //   setError("Invalid login response");
-          //   return;
-          // }
+          if (!token || !user) {
+            setError("Invalid login response");
+            return;
+          }
 
-          // store cookies
-          Cookies.set("token", token);
-          Cookies.set("user", JSON.stringify(user));
-          Cookies.set("role", JSON.stringify(user?.role));
+          Cookies.set("token", token, { expires: 7 });
+          Cookies.set("user", JSON.stringify(user), { expires: 7 });
+          Cookies.set("role", user?.role || "", { expires: 7 });
 
-          // update auth context
           setUser(user);
 
           const redirect = new URLSearchParams(window.location.search).get(
             "redirect",
           );
+
           const redirectTo =
             redirect && redirect.startsWith("/") && !redirect.startsWith("//")
               ? redirect
