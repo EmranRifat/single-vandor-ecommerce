@@ -19,7 +19,7 @@ import {
 import Cookies from "js-cookie";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { DateRange, DayPicker } from "react-day-picker";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -43,8 +43,8 @@ const propertyTypes = [
     id: "hotel",
     label: "Hotel",
     Icon: Hotel,
-  },
-];
+    },
+  ];
 
 const propertyCopy = {
   apartment: {
@@ -235,7 +235,6 @@ export default function HostSetupPage() {
       ([key]) =>
         facilityOptions.find((option) => option.id === key)?.label || key,
     );
-
 
   const hostDetailsPreview = [
     {
@@ -429,6 +428,90 @@ export default function HostSetupPage() {
       return current.filter((item) => item.id !== id);
     });
   };
+
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [geocodeError, setGeocodeError] = useState<string | null>(null);
+
+  // Debounced geocoding: when the user types a location, look it up via
+  // OpenStreetMap Nominatim and recenter the map. Only runs on step 3.
+  useEffect(() => {
+    if (step !== 3) return;
+
+    const query = form.location.trim();
+    if (query.length < 3) {
+      setGeocodeError(null);
+      return;
+    }
+
+    // Don't geocode the placeholder default
+    if (query === "Road 25, Banani" || query === "Current location") return;
+
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setIsGeocoding(true);
+      setGeocodeError(null);
+
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(
+            query,
+          )}`,
+          {
+            headers: {
+              Accept: "application/json",
+            },
+            signal: controller.signal,
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Geocoding failed (${response.status})`);
+        }
+
+        const results = (await response.json()) as Array<{
+          lat: string;
+          lon: string;
+          display_name: string;
+        }>;
+
+        if (results.length === 0) {
+          setGeocodeError("No matching location found");
+          return;
+        }
+
+        const match = results[0];
+        const nextLat = Number.parseFloat(match.lat);
+        const nextLon = Number.parseFloat(match.lon);
+
+        if (Number.isNaN(nextLat) || Number.isNaN(nextLon)) {
+          setGeocodeError("Invalid coordinates returned");
+          return;
+        }
+
+        setForm((current) => ({
+          ...current,
+          latitude: nextLat,
+          longitude: nextLon,
+          location: match.display_name || current.location,
+        }));
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+        const message =
+          error instanceof Error ? error.message : "Geocoding failed";
+        setGeocodeError(message);
+        console.error("Geocoding error:", error);
+      } finally {
+        setIsGeocoding(false);
+      }
+    }, 800);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [form.location, step]);
 
   const mapDelta = 0.008;
   const mapBbox = [
@@ -704,7 +787,6 @@ export default function HostSetupPage() {
                 </button>
               </div> */}
 
-             
               <div className="mt-3 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2">
                 <DayPicker
                   mode="range"
@@ -826,15 +908,28 @@ export default function HostSetupPage() {
             <div className="mt-8 grid gap-4 sm:grid-cols-[1fr_180px]">
               <label className="block">
                 <span className="sr-only">Property location</span>
-                <input
-                  required
-                  value={form.location}
-                  onChange={(event) =>
-                    setForm({ ...form, location: event.target.value })
-                  }
-                  placeholder="Road 25, Banani"
-                  className="h-14 w-full border-b border-gray-300 bg-transparent px-1 text-xl font-medium outline-none transition placeholder:text-gray-400 focus:border-pink-500"
-                />
+                <div className="relative">
+                  <input
+                    required
+                    value={form.location}
+                    onChange={(event) =>
+                      setForm({ ...form, location: event.target.value })
+                    }
+                    placeholder="Road 25, Banani"
+                    className="h-14 w-full border-b border-gray-300 bg-transparent px-1 pr-8 text-xl font-medium outline-none transition placeholder:text-gray-400 focus:border-pink-500"
+                  />
+                  {isGeocoding ? (
+                    <span
+                      aria-label="Searching location"
+                      className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2"
+                    >
+                      <span className="block h-4 w-4 animate-spin rounded-full border-2 border-pink-200 border-t-pink-500" />
+                    </span>
+                  ) : null}
+                </div>
+                {geocodeError ? (
+                  <p className="mt-1 text-xs text-red-500">{geocodeError}</p>
+                ) : null}
               </label>
 
               <button

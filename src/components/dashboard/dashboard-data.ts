@@ -46,6 +46,7 @@ export const bookings = [
   },
 ];
 
+
 export const listings = [
   {
     title: "Lake View Apartment",

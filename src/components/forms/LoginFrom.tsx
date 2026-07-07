@@ -127,13 +127,19 @@ export default function LoginForm() {
           validationBehavior="aria"
           variant="secondary"
         >
-          <Label>Enter Your Email</Label>
+          <Label className="text-gray-700 dark:text-gray-200">
+            Enter Your Email
+          </Label>
           <Input
             className="
-              py-2.5 bg-white
+              py-2.5 bg-white text-gray-900 placeholder:text-gray-400
+              border border-gray-200 rounded-lg
               data-[focus-visible=true]:ring-0
               data-[focus-visible=true]:outline-none
               data-[focus-visible=true]:border-gray-400
+              dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500
+              dark:border-gray-700 dark:data-[focus-visible=true]:border-gray-500
+              transition-colors
                        "
             value={formik.values.email}
             onChange={formik.handleChange}
@@ -160,14 +166,20 @@ export default function LoginForm() {
           variant="secondary"
           className="relative "
         >
-          <Label>Enter Your Password</Label>
+          <Label className="text-gray-700 dark:text-gray-200">
+            Enter Your Password
+          </Label>
           <div className="relative flex items-center">
             <Input
               className="
-    py-2.5 bg-white
+    py-2.5 pr-10 bg-white text-gray-900 placeholder:text-gray-400
+    border border-gray-200 rounded-lg
     data-[focus-visible=true]:ring-0
     data-[focus-visible=true]:outline-none
     data-[focus-visible=true]:border-gray-400
+    dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500
+    dark:border-gray-700 dark:data-[focus-visible=true]:border-gray-500
+    transition-colors
   "
               type={isVisible ? "text" : "password"}
               value={formik.values.password}
@@ -177,14 +189,14 @@ export default function LoginForm() {
             />
             <button
               aria-label="toggle password visibility"
-              className="absolute right-3 focus:outline-none"
+              className="absolute right-3 flex h-8 w-8 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 focus:outline-none dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
               type="button"
               onClick={toggleVisibility}
             >
               {isVisible ? (
-                <EyeSlashIcon className="text-md text-default-400 pointer-events-none" />
+                <EyeSlashIcon className="text-md pointer-events-none" />
               ) : (
-                <EyeIcon className="text-md text-default-400 pointer-events-none" />
+                <EyeIcon className="text-md pointer-events-none" />
               )}
             </button>
           </div>
@@ -195,20 +207,26 @@ export default function LoginForm() {
       </motion.div>
 
       {/* ERROR */}
-      {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+      {error && (
+        <div
+          role="alert"
+          className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-center text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400"
+        >
+          {error}
+        </div>
+      )}
 
       {/* BUTTON */}
       <Button
         size="lg"
         type="submit"
-        variant="secondary"
         isDisabled={loading}
         fullWidth
-        className="w-full py-4 text-md"
+        className="w-full rounded-lg bg-gradient-to-r from-red-600 to-orange-500 py-4 text-base font-semibold text-white shadow-md transition-all hover:from-red-700 hover:to-orange-600 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-70 dark:shadow-none"
       >
         {loading ? (
           <span className="flex items-center justify-center gap-2">
-            <Spinner size="sm" />
+            <Spinner size="sm" color="current" />
             Logging in...
           </span>
         ) : (

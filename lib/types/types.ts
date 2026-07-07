@@ -16,7 +16,7 @@ export interface RegUserResponse {
   message: string;
   isLoading: boolean;
 }
-export type User = {
+export type All = {
   id: number;
   name: string;
   email: string;
@@ -24,9 +24,9 @@ export type User = {
 };
 
 export type AuthContextType = {
-  user: User | null;
+  user: All | null;
   loading: boolean;
-  setUser: (user: User | null) => void;
+  setUser: (user: All | null) => void;
   logout_user: () => void;
 };
 
@@ -364,3 +364,34 @@ export type ApiLogsResponse = {
   message?: string;
   error?: string;
 };
+export interface AllUser {
+  id: number;
+  name: string;
+  email: string;
+  role: "admin" | "user" | "host";
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AllUser {
+  id: number;
+  name: string;
+  email: string;
+  role: "admin" | "user" | "host";
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface GetAllUsersResponse {
+  status: string;
+  message: string;
+  pagination: PaginationInfo;
+  data: AllUser[];
+}
