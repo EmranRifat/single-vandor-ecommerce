@@ -27,6 +27,7 @@ import {
   User,
   Users,
 } from "lucide-react";
+
 import type { RootState } from "@/lib/store";
 import { useAuth } from "@/lib/auth-context";
 import { useProductDetails } from "@/lib/hooks/product/useProductDetails";
@@ -37,7 +38,8 @@ import "react-toastify/dist/ReactToastify.css";
 
 const fallbackListing = {
   id: "demo-booking",
-  title: "[VEONE-Quill] Twin Towers Business District Subway Exit Infinity Pool",
+  title:
+    "[VEONE-Quill] Twin Towers Business District Subway Exit Infinity Pool",
   image:
     "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=600&q=80",
   price_per_night: 52.94,
@@ -68,7 +70,7 @@ const getDateFromParam = (value: string | null, fallbackDays: number) => {
 
 const getNights = (checkIn: Date, checkOut: Date) => {
   const diff = Math.round(
-    (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)
+    (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24),
   );
 
   return Math.max(1, diff);
@@ -179,16 +181,16 @@ function BookingContent() {
       : fallbackListing;
 
   const [checkIn, setCheckIn] = useState(() =>
-    getDateFromParam(searchParams.get("checkIn"), 2)
+    getDateFromParam(searchParams.get("checkIn"), 2),
   );
   const [checkOut, setCheckOut] = useState(() =>
-    getDateFromParam(searchParams.get("checkOut"), 4)
+    getDateFromParam(searchParams.get("checkOut"), 4),
   );
   const [adults, setAdults] = useState(() =>
-    Math.max(1, Number(searchParams.get("adults")) || 1)
+    Math.max(1, Number(searchParams.get("adults")) || 1),
   );
   const [children, setChildren] = useState(() =>
-    Math.max(0, Number(searchParams.get("children")) || 0)
+    Math.max(0, Number(searchParams.get("children")) || 0),
   );
   const [paymentMethod, setPaymentMethod] = useState("manual");
   const [showTripEditor, setShowTripEditor] = useState(false);
@@ -197,6 +199,7 @@ function BookingContent() {
   const [submitError, setSubmitError] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [billing, setBilling] = useState({
+    phone: "",
     cardNumber: "",
     expiration: "",
     cvv: "",
@@ -314,7 +317,9 @@ function BookingContent() {
         const gatewayUrl = getSslGatewayUrl(response);
 
         if (!gatewayUrl) {
-          throw new Error("Payment gateway URL was not returned by the server.");
+          throw new Error(
+            "Payment gateway URL was not returned by the server.",
+          );
         }
 
         toast.info("Redirecting to SSLCommerz secure payment...");
@@ -379,7 +384,9 @@ function BookingContent() {
         setSubmitted(true);
       } catch (error) {
         const message =
-          error instanceof Error ? error.message : "Failed to submit bKash booking";
+          error instanceof Error
+            ? error.message
+            : "Failed to submit bKash booking";
 
         setSubmitError(message);
         toast.error(message);
@@ -392,6 +399,11 @@ function BookingContent() {
 
     const manualBookingPayload = {
       listing_id: String(listing.id),
+      product_title: listing.title,
+      product_image: listing.image,
+      booking_id: sslCustomer.bookingId
+        ? Number(sslCustomer.bookingId) || null
+        : null,
       payment_method: "manual" as const,
       check_in: toDateInputValue(checkIn),
       check_out: toDateInputValue(checkOut),
@@ -399,23 +411,32 @@ function BookingContent() {
       children,
       total_amount: pricing.total,
       currency,
-      billing_address: {
+      user_address: {
         street: billing.street,
         city: billing.city,
         zip: billing.zip,
         country: billing.country,
+      },
+
+      user_information: {
+        name: user?.name || "",
+        role: user?.role || "user",
+        phone: billing.phone,
+        email: user?.email || "",
       },
       card_last4: billing.cardNumber.replace(/\D/g, "").slice(-4),
       card_expiration: billing.expiration,
       terms_accepted: acceptedTerms,
     };
 
-    try { 
+    try {
       setSubmitError("");
       setIsSubmitting(true);
       console.log("Manual booking payload", manualBookingPayload);
       const response = await createManualBooking(manualBookingPayload);
-      toast.success(response.message || "Booking created successfully with manual payment");
+      toast.success(
+        response.message || "Booking created successfully with manual payment",
+      );
       setSubmitted(true);
     } catch (error) {
       const message =
@@ -443,7 +464,7 @@ function BookingContent() {
           </p>
           <button
             type="button"
-            onClick={() => router.push("/products")}
+            onClick={() => router.push("/")}
             className="mt-8 rounded-lg bg-gray-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
           >
             Browse more stays
@@ -570,7 +591,39 @@ function BookingContent() {
             </div>
 
             {paymentMethod === "manual" ? (
-              <div className="mt-4">
+              <div className="mt-4 space-y-4">
+                <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5">
+                  <h3 className="text-sm font-semibold text-gray-950">
+                    User information
+                  </h3>
+                  <p className="mt-1 text-xs text-gray-500">
+                    These details are required to confirm your booking.
+                  </p>
+
+                  <div className="mt-4 space-y-3">
+                    <label className="block text-sm font-semibold text-gray-800">
+                      <span className="mb-1.5 flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-gray-500" />
+                        Mobile number
+                      </span>
+                      <input
+                        required
+                        type="tel"
+                        inputMode="tel"
+                        value={billing.phone}
+                        onChange={(event) =>
+                          setBilling({ ...billing, phone: event.target.value })
+                        }
+                        placeholder="01712345678"
+                        className="h-12 w-full rounded-lg border border-gray-300 px-4 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                      />
+                      <span className="mt-1 block text-xs text-gray-500">
+                        Bangladesh mobile format (11 digits).
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
                 <div className="overflow-hidden rounded-lg border border-gray-400">
                   <input
                     required
@@ -867,7 +920,6 @@ function BookingContent() {
                     </label>
                   </div>
                 </div>
-
               </div>
             )}
 
@@ -986,7 +1038,9 @@ function BookingContent() {
                       Change
                     </button>
                   </div>
-                  <p className="mt-1 text-sm">{getGuestsLabel(adults, children)}</p>
+                  <p className="mt-1 text-sm">
+                    {getGuestsLabel(adults, children)}
+                  </p>
                 </div>
 
                 <div className="py-4">
@@ -1054,20 +1108,22 @@ function BookingContent() {
                               (setter as Dispatch<SetStateAction<number>>)(
                                 Math.max(
                                   minimum as number,
-                                  (value as number) - 1
-                                )
+                                  (value as number) - 1,
+                                ),
                               )
                             }
                             className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-lg shadow-sm"
                           >
                             -
                           </button>
-                          <span className="w-5 text-center">{value as number}</span>
+                          <span className="w-5 text-center">
+                            {value as number}
+                          </span>
                           <button
                             type="button"
                             onClick={() =>
                               (setter as Dispatch<SetStateAction<number>>)(
-                                (value as number) + 1
+                                (value as number) + 1,
                               )
                             }
                             className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-lg shadow-sm"
@@ -1086,10 +1142,16 @@ function BookingContent() {
                 <div className="mt-3 space-y-2 text-sm">
                   <div className="flex justify-between gap-4">
                     <span>
-                      {pricing.nights} {pricing.nights === 1 ? "night" : "nights"} x {" "}
-                      {formatCurrency(Number(listing.price_per_night || 0), currency)}
+                      {pricing.nights}{" "}
+                      {pricing.nights === 1 ? "night" : "nights"} x{" "}
+                      {formatCurrency(
+                        Number(listing.price_per_night || 0),
+                        currency,
+                      )}
                     </span>
-                    <span>{formatCurrency(pricing.nightlyTotal, currency)}</span>
+                    <span>
+                      {formatCurrency(pricing.nightlyTotal, currency)}
+                    </span>
                   </div>
                   <div className="flex justify-between gap-4 text-emerald-700">
                     <span>Special offer</span>

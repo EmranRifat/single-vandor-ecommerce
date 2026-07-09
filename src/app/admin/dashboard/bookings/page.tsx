@@ -1,15 +1,5 @@
-import BookingsView from "@/src/components/dashboard/ListingsView";
-import DashboardShell from "@/src/components/dashboard/DashboardShell";
+import BookingList from "@/src/components/dashboard/AllBookingList";
 
 export default function AdminBookingsPage() {
-  return (
-    <DashboardShell
-      activeItem="bookings"
-      eyebrow="Admin bookings"
-      title="Manage bookings"
-      description="Track reservations, guest details, and booking statuses."
-    >
-      <BookingsView />
-    </DashboardShell>
-  );
+  return <BookingList />;
 }

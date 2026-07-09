@@ -159,6 +159,9 @@ export type Product = ProductDetail & {
 
 export type ManualBookingPayload = {
   listing_id: string;
+  product_title?: string;
+  product_image?: string;
+  booking_id?: number | null;
   payment_method: "manual" | "sslcommerz" | "bkash";
   check_in: string;
   check_out: string;
@@ -171,6 +174,18 @@ export type ManualBookingPayload = {
     city: string;
     zip: string;
     country: string;
+  };
+  user_address?: {
+    street: string;
+    city: string;
+    zip: string;
+    country: string;
+  };
+  user_information?: {
+    name: string;
+    role: "admin" | "user" | "host" | string;
+    phone: string;
+    email: string;
   };
   card_last4?: string;
   card_expiration?: string;
@@ -394,4 +409,55 @@ export interface GetAllUsersResponse {
   message: string;
   pagination: PaginationInfo;
   data: AllUser[];
+}
+export interface Booking {
+  id: number;
+  booking_id?: string | number;
+  booked_by_id: number;
+  booked_by_name: string;
+  booked_by_email: string;
+  booked_by_role: string;
+  user_name?: string;
+  user_email?: string;
+  user_phone?: string;
+  user_role?: string;
+  listing_id: string;
+  payment_method: string;
+  product_title?: string;
+  product_image?: string;
+  check_in: string;
+  check_out: string;
+  adults: number;
+  children: number;
+  total_amount: number;
+  currency: string;
+  billing_street?: string;
+  billing_city?: string;
+  billing_zip?: string;
+  billing_country?: string;
+  user_street?: string;
+  user_city?: string;
+  user_zip?: string;
+  user_country?: string;
+  card_last4: string;
+  card_expiration: string;
+  terms_accepted: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BookingPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+export interface GetBookingsResponse {
+  status: string;
+  message: string;
+  data: Booking[];
+  pagination: BookingPagination;
 }

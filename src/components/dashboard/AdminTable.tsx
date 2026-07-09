@@ -1,8 +1,8 @@
 "use client";
 
+import { useGetAllUsers } from "@/lib/hooks/dashboard/useGetAllBooking";
 import { Pagination } from "@heroui/react";
 import { useState } from "react";
-import { useGetAllUsers } from "@/lib/hooks/dashboard/UseGetAllUsers";
 
 export default function AdminTable() {
   const [currentPage, setCurrentPage] = useState(1);
