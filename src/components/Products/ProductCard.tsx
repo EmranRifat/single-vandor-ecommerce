@@ -20,15 +20,14 @@ export default function ProductCard({ item, index = 0 }: ItemCardProps) {
     <>
       <motion.div className="w-full">
         <Link href={itemPath} className="block h-full">
-          <div className="flex flex-col overflow-hidden rounded-2xl bg-white shadow-md hover:shadow-lg transition-shadow h-80">
-            <div className="relative w-full h-44 bg-gray-100">
+          <div className="flex flex-col overflow-hidden rounded-2xl bg-white  bg-linear-to-r dark:from-gray-800 dark:to-gray-700 shadow-md hover:shadow-lg transition-shadow h-80">
+            <div className="relative w-full h-44 bg-gray-100 dark:bg-gray-600">
               <Image
                 width={400}
                 height={300}
                 src={item.image}
                 alt={item.title}
-                  unoptimized={isLocalBackendImage}
-
+                unoptimized={isLocalBackendImage}
                 loading="eager"
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
@@ -39,21 +38,21 @@ export default function ProductCard({ item, index = 0 }: ItemCardProps) {
                 </div>
               )}
 
-              <div className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1 text-sm font-semibold text-gray-900">
+              <div className="absolute right-3 top-3 rounded-full bg-white dark:bg-gray-400 px-2 py-0.5 text-sm font-semibold text-gray-800 dark:text-gray-100">
                 <span aria-hidden="true">&#9733;</span> {item.rating}
               </div>
             </div>
 
             <div className="flex flex-1 flex-col p-2">
               <div className="flex items-start gap-2 mb-2">
-                <h3 className="text-sm font-semibold text-gray-900 flex-1">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex-1">
                   {item.title}
                 </h3>
-                <span className="text-xs text-gray-500 capitalize bg-gray-100 px-1.5 py-0.5 rounded whitespace-nowrap text-xxs">
+                <span className="text-xs text-gray-500 dark:text-gray-400 capitalize bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded whitespace-nowrap text-xxs">
                   {item.category}
                 </span>
               </div>
-              <h3 className="text-sm text-gray-800 flex-1">
+              <h3 className="text-sm text-gray-800 dark:text-gray-300 flex-1">
                 {item.city && item.country
                   ? `${item.city}, ${item.country}`
                   : item.address || "-"}
@@ -61,12 +60,16 @@ export default function ProductCard({ item, index = 0 }: ItemCardProps) {
 
               <div className="mt-auto flex items-end justify-between">
                 <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-pink-500">
+                  <span className="text-sm font-semibold text-pink-500 dark:text-pink-400">
                     BDT {item.price_per_night} Taka
                   </span>
-                  <span className="text-xs text-gray-500">per day</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    per day
+                  </span>
                 </div>
-                <span className="text-xs text-gray-400">New</span>
+                <span className="text-xs text-gray-400 dark:text-gray-500">
+                  New
+                </span>
               </div>
             </div>
           </div>

@@ -13,16 +13,18 @@ import ProductCard from "../components/Products/ProductCard";
 import Footer from "../components/common/footer/footer";
 import TabsComponent from "../components/common/Tabs/tabs";
 import Navbar from "../components/Navbar/index";
+import { Player, Controls } from "@lottiefiles/react-lottie-player";
 
 export default function HomeClient() {
   const [activeCategory, setActiveCategory] = useState("apartments");
   const [showAll, setShowAll] = useState(false);
+  const [isDiscountExpanded, setIsDiscountExpanded] = useState(true);
+  const [isLocationExpanded, setIsLocationExpanded] = useState(true);
 
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
   });
-
 
   const tabCategoryNameMap: Record<string, string> = {
     apartments: "Apartment",
@@ -35,7 +37,7 @@ export default function HomeClient() {
 
   const selectedCategoryId = categories.find(
     (category: Category) =>
-      category.name.toLowerCase() === selectedCategoryName.toLowerCase()
+      category.name.toLowerCase() === selectedCategoryName.toLowerCase(),
   )?.id;
 
   const payload = {
@@ -51,8 +53,8 @@ export default function HomeClient() {
   const visibleListings = showAll ? listings : listings.slice(0, 8);
 
   return (
-    <div className="min-h-screen">
-      <div className="flex flex-col items-center justify-center text-center py-6 bg-gray-50">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
+      <div className="flex flex-col items-center justify-center text-center py-6 bg-gradient-to-r from-orange-50 to-red-50 dark:from-gray-800 dark:to-gray-700">
         {/* <Navbar /> */}
 
         <div className="w-fit">
@@ -66,23 +68,25 @@ export default function HomeClient() {
       {isLoading || isFetching ? (
         <div className="flex items-center justify-center py-20">
           <Spinner color="success" />
-          <p className="text-gray-500 text-lg">Loading ...</p>
+          <p className="text-gray-500 dark:text-gray-400 text-lg">
+            Loading ...
+          </p>
         </div>
       ) : isError ? (
         <div className="flex items-center justify-center py-20">
-          <p className="text-red-500 text-lg">
+          <p className="text-red-500 dark:text-red-400 text-lg">
             {error?.message || "Unable to load products."}
           </p>
         </div>
       ) : listings.length === 0 ? (
         <div className="flex items-center justify-center py-20">
-          <p className="text-gray-500 text-lg">
+          <p className="text-gray-500 dark:text-gray-400 text-lg">
             No products found in this category.
           </p>
         </div>
       ) : null}
 
-      <section className="py-10 bg-white">
+      <section className="py-10 bg-white dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -90,12 +94,12 @@ export default function HomeClient() {
             viewport={{ once: true }}
             className="flex justify-between mb-6"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
               {activeCategory === "apartments"
                 ? "Apartments"
                 : activeCategory === "hotels"
-                ? "Hotels"
-                : "Rooms"}
+                  ? "Hotels"
+                  : "Rooms"}
             </h2>
           </motion.div>
 
@@ -118,6 +122,77 @@ export default function HomeClient() {
           ) : null}
         </div>
       </section>
+
+      {/* Lottie animations */}
+
+      <div className="fixed right-4 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-5">
+        {/* Discount Card */}
+        <div
+          onClick={() => setIsDiscountExpanded(!isDiscountExpanded)}
+          className="group cursor-pointer rounded-xl bg-white dark:bg-gray-800 p-2 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:scale-105 hover:shadow-2xl relative"
+        >
+          <div className="flex items-center justify-center">
+            <div
+              className={`transition-all duration-300 origin-center ${isDiscountExpanded ? "w-24 h-24" : "w-0 h-0 overflow-hidden"}`}
+            >
+              {isDiscountExpanded && (
+                <img
+                  src="/lottie/Discount.svg"
+                  alt="Discount"
+                  className="h-24 w-24 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6"
+                />
+              )}
+            </div>
+          </div>
+          <span className="absolute right-1 top-1/2 -translate-y-1/2 text-sm text-gray-400 dark:text-gray-500">
+            》
+          </span>
+          {isDiscountExpanded && (
+            <p className="mt-1 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 group-hover:text-red-500 dark:group-hover:text-red-400 animate-fadeIn">
+              Discount
+            </p>
+          )}
+        </div>
+
+        {/* Location Card */}
+        <div
+          onClick={() => setIsLocationExpanded(!isLocationExpanded)}
+          className="group cursor-pointer rounded-xl bg-white dark:bg-gray-800 p-2 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:scale-105 hover:shadow-2xl relative"
+        >
+          <div className="flex items-center justify-center">
+            <div
+              className={`transition-all duration-300 origin-center ${isLocationExpanded ? "w-24 h-24" : "w-0 h-0 overflow-hidden"}`}
+            >
+              {isLocationExpanded && (
+                <img
+                  src="/lottie/Location.svg"
+                  alt="Location"
+                  className="h-24 w-24 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6"
+                />
+              )}
+            </div>
+          </div>
+          <span className="absolute right-1 top-1/2 -translate-y-1/2 text-sm text-gray-400 dark:text-gray-500">
+            》
+          </span>
+          {isLocationExpanded && (
+            <p className="mt-1 text-center text-xs font-semibold text-gray-700 dark:text-gray-300 group-hover:text-blue-500 dark:group-hover:text-blue-400 animate-fadeIn">
+              Location
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* 
+      <div className="fixed right-4 top-1/2 transform -translate-y-1/2 z-10 p-4 ">
+        <Player
+          autoplay
+          loop
+          src="/static/animations/delivery.json"
+          style={{ height: "300px", width: "300px" }}
+        >
+        </Player>
+      </div> */}
 
       <Footer />
     </div>
