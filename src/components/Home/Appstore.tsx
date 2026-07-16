@@ -4,20 +4,18 @@ import { ArrowRight } from "lucide-react";
 
 const AppStore = () => {
     return (
-        <section className="bg-white py-20">
-            <div className="mx-auto flex max-w-7xl flex-col items-center gap-12 px-6 lg:flex-row lg:justify-between">
+<section className="bg-gradient-to-br from-indigo-50 via-white to-violet-100 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 py-20 transition-colors duration-300">            <div className="mx-auto flex max-w-7xl flex-col items-center gap-12 px-6 lg:flex-row lg:justify-between">
                 {/* Left Content */}
                 <div className="max-w-xl">
-                    <h2 className="text-3xl font-bold leading-tight text-slate-900 lg:text-4xl">
-                        Download, Search & <br />
-                        Book Your Perfect Place
-                    </h2>
+                    <h2 className="text-3xl font-bold leading-tight text-slate-900 dark:text-white lg:text-4xl">
+    Download, Search & <br />
+    Book Your Perfect Place
+</h2>
 
-                    <p className="mt-5 text-md leading-8 text-slate-600">
-                        Download the Travela app to explore and manage your journeys
-                        anytime, anywhere.
-                    </p>
-
+<p className="mt-5 text-md leading-8 text-slate-600 dark:text-slate-300">
+    Download the Travela app to explore and manage your journeys anytime,
+    anywhere.
+</p>
                     {/* Store Buttons */}
                     <div className="mt-10 flex flex-wrap items-center gap-4">
                         <Image

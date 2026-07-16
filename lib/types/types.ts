@@ -73,6 +73,11 @@ export type Category = {
   created_at: string;
   updated_at: string;
 };
+export type SideCategory = {
+  id: string;
+  name: string;
+
+};
 
 export interface ListingData {
   id: string

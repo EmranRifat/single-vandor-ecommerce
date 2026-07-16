@@ -56,16 +56,30 @@ export default function HomeClient() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
-      <div className="flex flex-col items-center justify-center text-center py-6 bg-gradient-to-r from-orange-50 to-red-50 dark:from-gray-800 dark:to-gray-700">
-        {/* <Navbar /> */}
+<div
+  className="
+    flex flex-col items-center justify-center
+    py-8
 
-        <div className="w-fit">
-          <TabsComponent
-            activeTab={activeCategory}
-            onTabChange={setActiveCategory}
-          />
-        </div>
-      </div>
+    bg-gradient-to-br
+    from-pink-50
+    via-rose-50
+    to-white
+
+    dark:from-gray-950
+    dark:via-gray-900
+    dark:to-gray-800
+
+    transition-all duration-300
+  "
+>
+  <div className="w-fit">
+    <TabsComponent
+      activeTab={activeCategory}
+      onTabChange={setActiveCategory}
+    />
+  </div>
+</div>
 
       {isLoading || isFetching ? (
         <div className="flex items-center justify-center py-20">
@@ -88,40 +102,87 @@ export default function HomeClient() {
         </div>
       ) : null}
 
-      <section className="py-10 bg-white dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section
+        className="
+    py-12
+
+    bg-gradient-to-br
+    from-gray-50
+    via-white
+    to-rose-50
+
+    dark:bg-gradient-to-br
+    dark:from-gray-950
+    dark:via-gray-900
+    dark:to-gray-800
+
+    transition-colors
+    duration-300
+  "
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="flex justify-between mb-6"
+            className="mb-8 flex items-center justify-between"
           >
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              {activeCategory === "apartments"
-                ? "Apartments"
-                : activeCategory === "hotels"
-                  ? "Hotels"
-                  : "Rooms"}
-            </h2>
+            <div>
+              <h2 className="text-4xl font-bold text-gray-900 dark:text-white">
+                {activeCategory === "apartments"
+                  ? "Apartments"
+                  : activeCategory === "hotels"
+                    ? "Hotels"
+                    : "Rooms"}
+              </h2>
+
+              <div className="mt-3 h-1 w-20 rounded-full bg-gradient-to-r from-pink-500 via-rose-400 to-orange-400" />
+            </div>
           </motion.div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {visibleListings.map((product: Product, index: number) => (
               <ProductCard key={product.id} item={product} index={index} />
             ))}
           </div>
 
-          {listings.length > 8 && !showAll ? (
-            <div className="flex justify-center mt-10">
+          {listings.length > 8 && !showAll && (
+            <div className="mt-12 flex justify-center">
               <button
                 type="button"
                 onClick={() => setShowAll(true)}
-                className="px-6 py-3 rounded-full bg-linear-to-r from-orange-500 to-red-600 text-white font-medium shadow-lg hover:scale-105 transition-all duration-300"
+                className="
+            rounded-full
+
+            bg-gradient-to-r
+            from-pink-500
+            via-rose-500
+            to-orange-500
+
+            px-8
+            py-3
+
+            font-semibold
+            text-white
+
+            shadow-lg
+            shadow-pink-500/30
+
+            transition-all
+            duration-300
+
+            hover:-translate-y-1
+            hover:scale-105
+            hover:shadow-xl
+            hover:shadow-pink-500/40
+
+            active:scale-95
+          "
               >
-                See more
+                See More
               </button>
             </div>
-          ) : null}
+          )}
         </div>
       </section>
 
@@ -157,6 +218,7 @@ export default function HomeClient() {
         </div>
 
         {/* Location Card */}
+
         <div
           onClick={() => setIsLocationExpanded(!isLocationExpanded)}
           className="group cursor-pointer rounded-xl bg-white dark:bg-gray-800 p-2 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:scale-105 hover:shadow-2xl relative"

@@ -35,10 +35,22 @@ export interface ApiResponse {
   pagination: Pagination;
 }
 
+export type ProductSortOption =
+  | "recommended"
+  | "price_asc"
+  | "price_desc"
+  | "rating_desc"
+  | "newest";
+
 export interface GetProductsPayload {
   page?: number;
   limit?: number;
   category?: string;
   city?: string;
   token?: string;
+  min_price?: number;
+  max_price?: number;
+  min_rating?: number;
+  is_superhost?: boolean;
+  sort_by?: ProductSortOption;
 }

@@ -34,6 +34,26 @@ const fetchProducts = async (
     params.append("city", payload.city);
   }
 
+  if (payload.min_price !== undefined) {
+    params.append("min_price", payload.min_price.toString());
+  }
+
+  if (payload.max_price !== undefined) {
+    params.append("max_price", payload.max_price.toString());
+  }
+
+  if (payload.min_rating !== undefined && payload.min_rating > 0) {
+    params.append("min_rating", payload.min_rating.toString());
+  }
+
+  if (payload.is_superhost) {
+    params.append("is_superhost", "true");
+  }
+
+  if (payload.sort_by && payload.sort_by !== "recommended") {
+    params.append("sort_by", payload.sort_by);
+  }
+
   const url = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/listings?${params.toString()}`;
 
   try {
