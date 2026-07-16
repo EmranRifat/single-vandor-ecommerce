@@ -20,36 +20,7 @@ const formatDate = (value?: string) => {
   }).format(new Date(value));
 };
 
-const getStatusClass = (status?: string) => {
-  const normalized = status?.toLowerCase();
 
-  if (
-    normalized === "approved" ||
-    normalized === "published" ||
-    normalized === "active" ||
-    normalized === "confirmed"
-  ) {
-    return "bg-emerald-100 text-emerald-700";
-  }
-
-  if (
-    normalized === "pending" ||
-    normalized === "draft" ||
-    normalized === "open"
-  ) {
-    return "bg-amber-100 text-amber-700";
-  }
-
-  if (
-    normalized === "rejected" ||
-    normalized === "reject" ||
-    normalized === "cancelled"
-  ) {
-    return "bg-rose-100 text-rose-700";
-  }
-
-  return "bg-slate-100 text-slate-700";
-};
 
 const getPaymentBadgeClass = (paymentMethod?: string) => {
   const normalized = paymentMethod?.toLowerCase();
@@ -108,7 +79,7 @@ export default function BookingList() {
       const result = await deleteBooking(bookingToDelete.id);
       toast.success(
         (result as { message?: string })?.message ||
-          "Booking deleted successfully.",
+        "Booking deleted successfully.",
       );
       setBookingToDelete(null);
     } catch (err) {
@@ -129,6 +100,8 @@ export default function BookingList() {
   const pageIndexOffset = (page - 1) * limit;
   const paginationItems = getPageNumbers(page, totalPages);
 
+  console.log("all_bookings:", bookings);
+
   const filteredBookings = useMemo(() => {
     return bookings.filter((item) => {
       const searchMatch = [
@@ -141,6 +114,7 @@ export default function BookingList() {
         item.user_role,
         item.listing_id,
         item.payment_method,
+        item.product_address,
       ]
         .filter(Boolean)
         .some((value) =>
@@ -248,19 +222,22 @@ export default function BookingList() {
                   <th className="px-4 py-3">Booked by</th>
                   <th className="px-4 py-3">Email</th>
                   <th className="px-4 py-3">Role</th>
+                  <th className="px-4 py-3">Category</th>
 
                   <th className="px-4 py-3">Guests</th>
                   <th className="px-4 py-3">Payment</th>
                   <th className="px-4 py-3">Total</th>
-                  <th className="px-4 py-3 text-left">Address</th>
+                  <th className="px-4 py-3 text-left">User Phone</th>
                   <th className="px-4 py-3">Created</th>
+                  <th className="px-4 py-3">Listing ID</th>
                   <th className="px-4 py-3 text-center">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredBookings.map((item, index) => {
+                  console.log('single_booking', item)
                   const totalGuests = (item.adults || 0) + (item.children || 0);
-                  const bookingIdValue = item.booking_id ?? item.id;
+                  const booking_id = item.id ?? item.id;
                   const emailValue =
                     item.booked_by_email || item.user_email || "-";
                   const roleValue =
@@ -269,19 +246,24 @@ export default function BookingList() {
                     item.user_street || item.billing_street || "";
                   const cityValue = item.user_city || item.billing_city || "";
                   const zipValue = item.user_zip || item.billing_zip || "";
-                  const countryValue =
-                    item.user_country || item.billing_country || "Bangladesh";
+                  const UserPhone =
+                    item.user_phone || "-";
+                  const hasAnyAddress =
+                    streetValue || cityValue || zipValue || UserPhone;
                   const hasStreet = !!streetValue;
                   const hasCity = !!cityValue;
                   const hasZip = !!zipValue;
-                  const hasAnyAddress = hasStreet || hasCity || hasZip;
+                  const product_address = item.product_address;
+                  const category = item.category;
+                  const listing_id = item.listing_id;
+
                   return (
                     <tr key={item.id} className="align-top hover:bg-slate-50">
                       <td className="px-4 py-4 text-center text-slate-600">
                         {pageIndexOffset + index + 1}
                       </td>
                       <td className="px-4 py-4 font-mono text-xs text-slate-700 text-center">
-                        #{bookingIdValue}
+                        {booking_id}
                       </td>
 
                       {/* <td className="px-4 py-4 font-mono text-xs text-slate-600 text-center">
@@ -313,9 +295,9 @@ export default function BookingList() {
                             <p className="truncate text-sm font-medium text-slate-900">
                               {item.product_title || "No title"}
                             </p>
-                            {item.listing_id && (
+                            {product_address && (
                               <p className="truncate text-[11px] text-slate-500">
-                                {item.listing_id}
+                                {product_address}
                               </p>
                             )}
                           </div>
@@ -331,11 +313,12 @@ export default function BookingList() {
                       <td className="px-4 py-4 text-slate-600 text-center">
                         {roleValue}
                       </td>
-
                       <td className="px-4 py-4 text-slate-600 text-center">
-                        {totalGuests} ({item.adults || 0}A /{" "}
-                        {item.children || 0}
-                        C)
+                        {category}
+                      </td>
+
+                      <td className="px-4 py-4 text-center text-slate-600 whitespace-nowrap">
+                        {totalGuests} ({item.adults || 0}A / {item.children || 0}C)
                       </td>
                       <td className="px-4 py-4 text-center">
                         <span
@@ -346,7 +329,7 @@ export default function BookingList() {
                           {item.payment_method || "-"}
                         </span>
                       </td>
-                      <td className="px-4 py-4 font-medium text-slate-900 text-center">
+                      <td className="px-4 py-4 font-medium text-slate-900 text-center whitespace-nowrap">
                         {Number(item.total_amount || 0).toLocaleString()}{" "}
                         <span className="text-xs font-normal text-slate-500">
                           {item.currency}
@@ -372,8 +355,8 @@ export default function BookingList() {
                               </p>
                             )}
 
-                            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                              {countryValue}
+                            <p className="text-[12px] font-semibold uppercase tracking-wide text-slate-400">
+                              {UserPhone}
                             </p>
                           </div>
                         ) : (
@@ -381,8 +364,14 @@ export default function BookingList() {
                         )}
                       </td>
 
-                      <td className="px-4 py-4 text-center text-slate-600">
+                      <td className="px-4 py-4 text-center text-slate-600 whitespace-nowrap">
                         {formatDate(item.created_at)}
+                      </td>
+
+                      <td className="px-4 py-4 text-center text-xs text-slate-600">
+                        <div className="mx-auto w-32 break-all leading-4">
+                          {listing_id}
+                        </div>
                       </td>
 
                       <td className="px-4 py-4 text-center">
@@ -448,11 +437,10 @@ export default function BookingList() {
                             type="button"
                             isActive={item === page}
                             onClick={() => setPage(item)}
-                            className={`inline-flex h-9 min-w-9 items-center justify-center rounded-xl border px-3 text-sm font-semibold transition ${
-                              item === page
-                                ? "border-slate-900 bg-slate-900 text-white"
-                                : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
-                            }`}
+                            className={`inline-flex h-9 min-w-9 items-center justify-center rounded-xl border px-3 text-sm font-semibold transition ${item === page
+                              ? "border-slate-900 bg-slate-900 text-white"
+                              : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
+                              }`}
                           >
                             {item}
                           </HeroPagination.Link>

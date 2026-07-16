@@ -1,7 +1,7 @@
 "use client";
 
 import { Label, TimeField } from "@heroui/react";
-import { parseTime } from "@internationalized/date";
+import { parseTime, Time } from "@internationalized/date";
 import {
   BedDouble,
   Building,
@@ -23,10 +23,10 @@ import { type FormEvent, useEffect, useState } from "react";
 import { DateRange, DayPicker } from "react-day-picker";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import type { TimeValue } from "react-aria-components/TimeField";
+
 import { useHostListing } from "@/lib/hooks/host/useHostListing";
 import { useAuth } from "@/lib/auth-context";
-import { HostListingPayload } from "@/lib/types/types";
+import { HostListingPayload, HostListingSubmission } from "@/lib/types/types";
 
 const propertyTypes = [
   {
@@ -43,8 +43,8 @@ const propertyTypes = [
     id: "hotel",
     label: "Hotel",
     Icon: Hotel,
-    },
-  ];
+  },
+];
 
 const propertyCopy = {
   apartment: {
@@ -86,7 +86,7 @@ const defaultAvailabilityRange = () => {
   return { from, to };
 };
 
-const formatTimeValue = (time: TimeValue) =>
+const formatTimeValue = (time: Time) =>
   new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
     minute: "2-digit",
@@ -102,12 +102,12 @@ const formatDate = (date?: Date) =>
 const formatDateRange = (range?: DateRange) =>
   range?.from && range?.to
     ? `${range.from.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      })} - ${range.to.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      })}`
+      month: "short",
+      day: "numeric",
+    })} - ${range.to.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    })}`
     : range?.from
       ? formatDate(range.from) || "Select available dates"
       : "Select available dates";
@@ -115,34 +115,14 @@ const formatDateRange = (range?: DateRange) =>
 const formatSubmittedDate = (date: string | null) =>
   date
     ? new Date(date).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
     : "Not selected";
 
-type AvailabilitySelectionMode = "single" | "range";
+export type AvailabilitySelectionMode = "single" | "range";
 
-type HostListingSubmission = {
-  propertyType: string;
-  title: string;
-  rentPerNight: string;
-  checkIn: string;
-  checkOut: string;
-  availabilitySelectionMode: AvailabilitySelectionMode;
-  availableDate: string | null;
-  availableFrom: string | null;
-  availableTo: string | null;
-  suggestedAvailableFrom: string | null;
-  suggestedAvailableTo: string | null;
-  location: string;
-  latitude: number;
-  longitude: number;
-  bedrooms: number;
-  beds: number;
-  bathrooms: number;
-  photos: string[];
-};
 
 export default function HostSetupPage() {
   const router = useRouter();
@@ -160,8 +140,10 @@ export default function HostSetupPage() {
     DateRange | undefined
   >(defaultAvailabilityRange);
 
+
   const [submittedData, setSubmittedData] =
     useState<HostListingSubmission | null>(null);
+
 
   const [form, setForm] = useState({
     title: "",
@@ -530,9 +512,8 @@ export default function HostSetupPage() {
       >
         <div className="h-1.5 bg-gray-200">
           <div
-            className={`h-full bg-gray-950 transition-all ${
-              step === 1 ? "w-1/3" : step === 2 ? "w-2/3" : "w-full"
-            }`}
+            className={`h-full bg-gray-950 transition-all ${step === 1 ? "w-1/3" : step === 2 ? "w-2/3" : "w-full"
+              }`}
           />
         </div>
 
@@ -552,11 +533,10 @@ export default function HostSetupPage() {
                     key={id}
                     type="button"
                     onClick={() => setSelectedType(id)}
-                    className={`flex min-h-[150px] flex-col items-center justify-center gap-5 rounded-lg border p-5 text-center transition ${
-                      isSelected
-                        ? "border-pink-500 bg-pink-50 shadow-sm ring-2 ring-pink-100"
-                        : "border-gray-300 bg-gray-50 hover:border-gray-950"
-                    }`}
+                    className={`flex min-h-[150px] flex-col items-center justify-center gap-5 rounded-lg border p-5 text-center transition ${isSelected
+                      ? "border-pink-500 bg-pink-50 shadow-sm ring-2 ring-pink-100"
+                      : "border-gray-300 bg-gray-50 hover:border-gray-950"
+                      }`}
                   >
                     <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-gray-200">
                       <Icon className="h-8 w-8 text-gray-950" />
@@ -709,7 +689,6 @@ export default function HostSetupPage() {
                       <TimeField
                         className="w-full"
                         name={timeField.name}
-                        value={timeField.value}
                         onChange={(value) => {
                           if (!value) return;
 
@@ -970,11 +949,10 @@ export default function HostSetupPage() {
                 {hostDetailsPreview.map((detail) => (
                   <div
                     key={detail.label}
-                    className={`rounded-xl border border-gray-200 bg-gray-50 p-3 ${
-                      detail.label === "Host" || detail.label === "Description"
-                        ? "sm:col-span-2"
-                        : ""
-                    }`}
+                    className={`rounded-xl border border-gray-200 bg-gray-50 p-3 ${detail.label === "Host" || detail.label === "Description"
+                      ? "sm:col-span-2"
+                      : ""
+                      }`}
                   >
                     <p className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">
                       {detail.label}

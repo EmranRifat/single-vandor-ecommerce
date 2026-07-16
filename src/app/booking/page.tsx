@@ -50,6 +50,9 @@ const fallbackListing = {
   is_superhost: true,
   city: "Kuala Lumpur",
   country: "Malaysia",
+  category: "Apartment",
+  address: "Twin Towers Business District, Kuala Lumpur, Malaysia",
+  product_address: "Twin Towers Business District, Kuala Lumpur, Malaysia",
 };
 
 const toDateInputValue = (date: Date) => date.toISOString().slice(0, 10);
@@ -170,14 +173,17 @@ function BookingContent() {
     ? data.data
     : firstCartItem
       ? {
-          ...fallbackListing,
-          id: firstCartItem.product.id,
-          title: firstCartItem.product.name,
-          image: firstCartItem.product.image,
-          price_per_night: firstCartItem.product.price,
-          rating: 4.92,
-          reviews_count: 36,
-        }
+        ...fallbackListing,
+        id: firstCartItem.product.id,
+        title: firstCartItem.product.name,
+        image: firstCartItem.product.image,
+        price_per_night: firstCartItem.product.price,
+        rating: 4.92,
+        reviews_count: 36,
+        category: firstCartItem.product.category || (firstCartItem.product as any).product_category?.name || "Apartment",
+        address: (firstCartItem.product as any).address || (firstCartItem.product as any).product_address || "Twin Towers Business District, Kuala Lumpur, Malaysia",
+        product_address: (firstCartItem.product as any).product_address || (firstCartItem.product as any).address || "Twin Towers Business District, Kuala Lumpur, Malaysia",
+      }
       : fallbackListing;
 
   const [checkIn, setCheckIn] = useState(() =>
@@ -275,6 +281,10 @@ function BookingContent() {
         if (!bookingId || Number.isNaN(bookingId)) {
           const bookingResponse = await createManualBooking({
             listing_id: String(listing.id),
+            product_title: listing.title,
+            product_image: listing.image,
+            category: listing.category,
+            product_address: listing.address || listing.product_address || `${listing.city || ""}, ${listing.country || ""}`,
             payment_method: "sslcommerz",
             check_in: toDateInputValue(checkIn),
             check_out: toDateInputValue(checkOut),
@@ -287,6 +297,12 @@ function BookingContent() {
               city: billing.city,
               zip: billing.zip,
               country: billing.country,
+            },
+            user_information: {
+              name: sslCustomer.customerName.trim() || user?.name || "",
+              role: user?.role || "user",
+              phone: sslCustomer.customerPhone.trim() || billing.phone || "",
+              email: sslCustomer.customerEmail.trim() || user?.email || "",
             },
             terms_accepted: acceptedTerms,
           });
@@ -348,6 +364,10 @@ function BookingContent() {
         if (!bookingId || Number.isNaN(bookingId)) {
           const bookingResponse = await createManualBooking({
             listing_id: String(listing.id),
+            product_title: listing.title,
+            product_image: listing.image,
+            category: listing.category,
+            product_address: listing.address || listing.product_address || `${listing.city || ""}, ${listing.country || ""}`,
             payment_method: "bkash",
             check_in: toDateInputValue(checkIn),
             check_out: toDateInputValue(checkOut),
@@ -360,6 +380,12 @@ function BookingContent() {
               city: billing.city,
               zip: billing.zip,
               country: billing.country,
+            },
+            user_information: {
+              name: sslCustomer.customerName.trim() || user?.name || "",
+              role: user?.role || "user",
+              phone: bkashDetails.mobileNumber.trim() || billing.phone || sslCustomer.customerPhone.trim() || "",
+              email: sslCustomer.customerEmail.trim() || user?.email || "",
             },
             terms_accepted: acceptedTerms,
           });
@@ -401,6 +427,8 @@ function BookingContent() {
       listing_id: String(listing.id),
       product_title: listing.title,
       product_image: listing.image,
+      category: listing.category,
+      product_address: listing.address || listing.product_address || `${listing.city || ""}, ${listing.country || ""}`,
       booking_id: sslCustomer.bookingId
         ? Number(sslCustomer.bookingId) || null
         : null,
@@ -500,11 +528,10 @@ function BookingContent() {
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               <label
-                className={`flex min-h-[92px] cursor-pointer items-center gap-4 rounded-lg border p-4 transition ${
-                  paymentMethod === "manual"
+                className={`flex min-h-[92px] cursor-pointer items-center gap-4 rounded-lg border p-4 transition ${paymentMethod === "manual"
                     ? "border-pink-500 bg-pink-50"
                     : "border-gray-200 hover:border-pink-300"
-                }`}
+                  }`}
               >
                 <input
                   type="radio"
@@ -531,11 +558,10 @@ function BookingContent() {
               </label>
 
               <label
-                className={`flex min-h-[92px] cursor-pointer items-center gap-4 rounded-lg border p-4 transition ${
-                  paymentMethod === "bkash"
+                className={`flex min-h-[92px] cursor-pointer items-center gap-4 rounded-lg border p-4 transition ${paymentMethod === "bkash"
                     ? "border-pink-500 bg-pink-50"
                     : "border-gray-200 hover:border-pink-300"
-                }`}
+                  }`}
               >
                 <input
                   type="radio"
@@ -557,11 +583,10 @@ function BookingContent() {
               </label>
 
               <label
-                className={`flex min-h-[92px] cursor-pointer items-center gap-4 rounded-lg border p-4 transition sm:col-span-2 ${
-                  paymentMethod === "sslcommerz"
+                className={`flex min-h-[92px] cursor-pointer items-center gap-4 rounded-lg border p-4 transition sm:col-span-2 ${paymentMethod === "sslcommerz"
                     ? "border-pink-500 bg-pink-50"
                     : "border-gray-200 hover:border-pink-300"
-                }`}
+                  }`}
               >
                 <input
                   type="radio"
@@ -609,17 +634,30 @@ function BookingContent() {
                       <input
                         required
                         type="tel"
-                        inputMode="tel"
+                        inputMode="numeric"
+                        maxLength={11}
                         value={billing.phone}
-                        onChange={(event) =>
-                          setBilling({ ...billing, phone: event.target.value })
-                        }
+                        onChange={(event) => {
+                          const digitsOnly = event.target.value.replace(/\D/g, "").slice(0, 11);
+                          setBilling({ ...billing, phone: digitsOnly });
+                        }}
                         placeholder="01712345678"
-                        className="h-12 w-full rounded-lg border border-gray-300 px-4 outline-none transition focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+                        pattern="\d{11}"
+                        className={`h-12 w-full rounded-lg border px-4 outline-none transition focus:ring-2 focus:ring-pink-100 ${
+                          billing.phone.length > 0 && billing.phone.length !== 11
+                            ? "border-red-400 focus:border-red-400"
+                            : "border-gray-300 focus:border-pink-400"
+                        }`}
                       />
-                      <span className="mt-1 block text-xs text-gray-500">
-                        Bangladesh mobile format (11 digits).
-                      </span>
+                      {billing.phone.length > 0 && billing.phone.length !== 11 ? (
+                        <span className="mt-1 block text-xs text-red-500">
+                          Must be exactly 11 digits ({billing.phone.length}/11)
+                        </span>
+                      ) : (
+                        <span className="mt-1 block text-xs text-gray-500">
+                          Bangladesh mobile format (11 digits, numbers only).
+                        </span>
+                      )}
                     </label>
                   </div>
                 </div>

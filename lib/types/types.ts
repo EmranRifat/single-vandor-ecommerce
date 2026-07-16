@@ -1,3 +1,4 @@
+import { AvailabilitySelectionMode } from "@/src/app/become-a-host/setup/page";
 import { Item } from "@/src/types/items";
 
 export interface NewUser {
@@ -82,6 +83,8 @@ export interface ListingData {
   country: string
   image: string
   category: string
+  address?: string
+  product_address?: string
   rating: number
   reviews_count: number
   host_name: string
@@ -111,6 +114,8 @@ export interface ProductItem {
   country: string;
   image: string;
   category: string;
+  address?: string;
+  product_address?: string;
   rating: number;
   reviews_count: number;
   host_name: string;
@@ -161,6 +166,8 @@ export type ManualBookingPayload = {
   listing_id: string;
   product_title?: string;
   product_image?: string;
+  category?: string;
+  product_address?: string;
   booking_id?: number | null;
   payment_method: "manual" | "sslcommerz" | "bkash";
   check_in: string;
@@ -302,6 +309,31 @@ export type HostListingItem = {
 };
 
 
+export type HostListingSubmission = {
+  propertyType: string;
+  title: string;
+  rentPerNight: string;
+  checkIn: string;
+  checkOut: string;
+  availabilitySelectionMode: AvailabilitySelectionMode;
+  availableDate: string | null;
+  availableFrom: string | null;
+  availableTo: string | null;
+  suggestedAvailableFrom: string | null;
+  suggestedAvailableTo: string | null;
+  location: string;
+  latitude: number;
+  longitude: number;
+  bedrooms: number;
+  beds: number;
+  bathrooms: number;
+  photos: string[];
+};
+
+
+
+
+
 
 export type HostListingPayload = {
   availabilitySelectionMode: "single" | "range";
@@ -411,6 +443,8 @@ export interface GetAllUsersResponse {
   data: AllUser[];
 }
 export interface Booking {
+  product_address: any;
+  category: string;
   id: number;
   booking_id?: string | number;
   booked_by_id: number;

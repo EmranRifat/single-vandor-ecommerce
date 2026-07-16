@@ -14,6 +14,8 @@ import Footer from "../components/common/footer/footer";
 import TabsComponent from "../components/common/Tabs/tabs";
 import Navbar from "../components/Navbar/index";
 import { Player, Controls } from "@lottiefiles/react-lottie-player";
+import Choice from "../components/Home/Choice";
+import AppStore from "../components/Home/Appstore";
 
 export default function HomeClient() {
   const [activeCategory, setActiveCategory] = useState("apartments");
@@ -194,6 +196,8 @@ export default function HomeClient() {
         </Player>
       </div> */}
 
+      <Choice />
+      <AppStore />
       <Footer />
     </div>
   );

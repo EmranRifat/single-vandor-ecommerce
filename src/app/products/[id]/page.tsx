@@ -62,7 +62,7 @@ const getFacilityIcon = (facility: string) => {
 };
 
 const getLocationCoordinates = (
-  location?: string | { lat?: number; lng?: number }
+  location?: string | { lat?: number; lng?: number },
 ) => {
   if (!location || typeof location === "string") {
     return null;
@@ -80,17 +80,12 @@ const getLocationCoordinates = (
 
 const getLocationLabel = (
   location: string | { lat?: number; lng?: number } | undefined,
-  fallback: string
+  fallback: string,
 ) => (typeof location === "string" && location ? location : fallback);
 
 const getMapEmbedUrl = (lat: number, lng: number) => {
   const delta = 0.008;
-  const bbox = [
-    lng - delta,
-    lat - delta,
-    lng + delta,
-    lat + delta,
-  ].join(",");
+  const bbox = [lng - delta, lat - delta, lng + delta, lat + delta].join(",");
 
   return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`;
 };
@@ -143,7 +138,9 @@ const getNights = (range: DateRange) => {
 
   return Math.max(
     1,
-    Math.round((range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24))
+    Math.round(
+      (range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24),
+    ),
   );
 };
 
@@ -166,7 +163,7 @@ export default function ProductDetailPage() {
   });
 
   const { data, isLoading, isError, error } = useProductDetails({ id });
-
+//  console.log("get Booking id ?????",id)
   const bookingDates = useMemo(() => {
     return {
       checkIn: dateRange.from,
@@ -177,7 +174,7 @@ export default function ProductDetailPage() {
 
   const updateGuestCount = (
     key: keyof typeof guestSelection,
-    direction: "increase" | "decrease"
+    direction: "increase" | "decrease",
   ) => {
     setGuestSelection((current) => {
       const minimum = key === "adults" ? 1 : 0;
@@ -225,10 +222,12 @@ export default function ProductDetailPage() {
     );
   }
 
-  const photos = item.images?.length ? item.images : [item.image].filter(Boolean);
+  const photos = item.images?.length
+    ? item.images
+    : [item.image].filter(Boolean);
   const galleryPhotos = Array.from(
     { length: 5 },
-    (_, index) => photos[index] || photos[0]
+    (_, index) => photos[index] || photos[0],
   );
   const details = item.details || {};
   const guestCount = details.guests || 1;
@@ -239,17 +238,19 @@ export default function ProductDetailPage() {
   const visibleAmenities = showAllAmenities ? amenities : amenities.slice(0, 6);
   const totalPrice = item.price_per_night * bookingDates.nights;
   const bookingDiscount = Number((totalPrice * 0.15).toFixed(2));
-  const bookingTaxes = Number(((totalPrice - bookingDiscount) * 0.055).toFixed(2));
+  const bookingTaxes = Number(
+    ((totalPrice - bookingDiscount) * 0.055).toFixed(2),
+  );
   const bookingTotal = Number(
-    (totalPrice - bookingDiscount + bookingTaxes).toFixed(2)
+    (totalPrice - bookingDiscount + bookingTaxes).toFixed(2),
   );
   const hostName = item.host?.name || item.host_name;
   const isSuperhost = item.host?.is_superhost ?? item.is_superhost;
   const locationLabel = getLocationLabel(
     item.location,
-    item.address || `${item.city}, ${item.country}`
+    item.address || `${item.city}, ${item.country}`,
   );
-  
+
   const mapCoordinates = getLocationCoordinates(item.location);
   const facilities = amenities.length
     ? amenities.slice(0, 6)
@@ -258,10 +259,10 @@ export default function ProductDetailPage() {
   const bookingUrl = `/booking?${new URLSearchParams({
     id: item.id,
     checkIn: bookingDates.checkIn
-      ? bookingDates.checkIn.toISOString()
+      ? bookingDates.checkIn.toISOString().slice(0, 10)
       : "",
     checkOut: bookingDates.checkOut
-      ? bookingDates.checkOut.toISOString()
+      ? bookingDates.checkOut.toISOString().slice(0, 10)
       : "",
     adults: String(guestSelection.adults),
     children: String(guestSelection.children),
@@ -293,45 +294,55 @@ export default function ProductDetailPage() {
     },
   ];
 
-  const handleBookNow = async () => {
-    if (item.availability === false) return;
+  // const handleBookNow = async () => {
+  //   if (item.availability === false) return;
 
-    try {
-      setBookingError("");
-      setIsCreatingBooking(true);
+  //   try {
+  //     setBookingError("");
+  //     setIsCreatingBooking(true);
 
-      const bookingResponse = await createManualBooking({
-        listing_id: String(item.id),
-        payment_method: "sslcommerz",
-        check_in: bookingDates.checkIn
-          ? bookingDates.checkIn.toISOString().slice(0, 10)
-          : "",
-        check_out: bookingDates.checkOut
-          ? bookingDates.checkOut.toISOString().slice(0, 10)
-          : "",
-        adults: guestSelection.adults,
-        children: guestSelection.children,
-        total_amount: bookingTotal,
-        currency: item.currency || "BDT",
-        terms_accepted: true,
-      });
-      const bookingId = getCreatedBookingId(bookingResponse);
+  //     const bookingResponse = await createManualBooking({
+  //       listing_id: String(item.id),
+  //       payment_method: "sslcommerz",
+  //       check_in: bookingDates.checkIn
+  //         ? bookingDates.checkIn.toISOString().slice(0, 10)
+  //         : "",
+  //       check_out: bookingDates.checkOut
+  //         ? bookingDates.checkOut.toISOString().slice(0, 10)
+  //         : "",
+  //       adults: guestSelection.adults,
+  //       children: guestSelection.children,
+  //       total_amount: bookingTotal,
+  //       currency: item.currency || "BDT",
+  //       terms_accepted: true,
+  //     });
 
-      if (!bookingId) {
-        throw new Error("Booking was created, but the booking ID was not returned.");
-      }
+  //     const bookingId = getCreatedBookingId(bookingResponse);
 
-      router.push(`${bookingUrl}&bookingId=${bookingId}`);
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to create booking";
+  //     if (!bookingId) {
+  //       throw new Error(
+  //         "Booking was created, but the booking ID was not returned.",
+  //       );
+  //     }
 
-      setBookingError(message);
-    } finally {
-      setIsCreatingBooking(false);
-    }
-  };
+  //     router.push(`${bookingUrl}&bookingId=${bookingId}`);
+  //   } catch (error) {
+  //     const message =
+  //       error instanceof Error ? error.message : "Failed to create booking";
 
+  //     setBookingError(message);
+  //   } finally {
+  //     setIsCreatingBooking(false);
+  //   }
+  // };
+
+
+
+const handleBookNow = () => {
+  if (item.availability === false) return;
+
+  router.push(`${bookingUrl}&bookingId=${id}`);
+};
   return (
     <main className="bg-white">
       <div className="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 lg:px-8">
@@ -347,7 +358,10 @@ export default function ProductDetailPage() {
               <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
               {Number(item.rating || 0).toFixed(2)}
             </span>
-            <a href="#reviews" className="font-medium underline underline-offset-2">
+            <a
+              href="#reviews"
+              className="font-medium underline underline-offset-2"
+            >
               {item.reviews_count} reviews
             </a>
             <span className="inline-flex items-center gap-1">
@@ -419,7 +433,11 @@ export default function ProductDetailPage() {
                 {bedCount > 0 && <span>{pluralize(bedCount, "bed")}</span>}
                 {bathroomCount > 0 && (
                   <span>
-                    {pluralize(bathroomCount, "attached bath", "attached baths")}
+                    {pluralize(
+                      bathroomCount,
+                      "attached bath",
+                      "attached baths",
+                    )}
                   </span>
                 )}
               </div>
@@ -431,7 +449,10 @@ export default function ProductDetailPage() {
                   <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                   {Number(item.rating || 0).toFixed(2)}
                 </span>
-                <a href="#reviews" className="font-medium underline underline-offset-2">
+                <a
+                  href="#reviews"
+                  className="font-medium underline underline-offset-2"
+                >
                   {item.reviews_count} reviews
                 </a>
               </div>
@@ -477,7 +498,9 @@ export default function ProductDetailPage() {
 
                   {amenities.length > 6 && (
                     <>
-                      {!showAllAmenities && <p className="mt-1 text-gray-800">...</p>}
+                      {!showAllAmenities && (
+                        <p className="mt-1 text-gray-800">...</p>
+                      )}
                       <button
                         type="button"
                         onClick={() => setShowAllAmenities((value) => !value)}
@@ -573,8 +596,7 @@ export default function ProductDetailPage() {
               {bookingDates.checkOut
                 ? dateFormatter.format(bookingDates.checkOut)
                 : "Select check out"}{" "}
-              (
-              {pluralize(bookingDates.nights, "night")})
+              ({pluralize(bookingDates.nights, "night")})
             </p>
           </section>
 
@@ -634,9 +656,14 @@ export default function ProductDetailPage() {
                     <DayPicker
                       mode="range"
                       selected={dateRange}
-                      onSelect={(range) =>
-                        setDateRange(range || getDefaultBookingRange())
-                      }
+                      onSelect={(range) => {
+                        const next = range || getDefaultBookingRange();
+                        setDateRange(next);
+                        // Auto-close calendar after user completes the range (check-in + check-out)
+                        if (next?.from && next?.to) {
+                          setShowCalendar(false);
+                        }
+                      }}
                       numberOfMonths={1}
                       disabled={{ before: new Date() }}
                       classNames={{
@@ -741,7 +768,9 @@ export default function ProductDetailPage() {
                             <button
                               type="button"
                               disabled={!canDecrease}
-                              onClick={() => updateGuestCount(row.key, "decrease")}
+                              onClick={() =>
+                                updateGuestCount(row.key, "decrease")
+                              }
                               className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xl leading-none text-gray-500 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:text-gray-300"
                               aria-label={`Decrease ${row.title}`}
                             >
@@ -752,7 +781,9 @@ export default function ProductDetailPage() {
                             </span>
                             <button
                               type="button"
-                              onClick={() => updateGuestCount(row.key, "increase")}
+                              onClick={() =>
+                                updateGuestCount(row.key, "increase")
+                              }
                               className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xl leading-none text-gray-700 transition hover:bg-gray-200"
                               aria-label={`Increase ${row.title}`}
                             >
@@ -787,8 +818,6 @@ export default function ProductDetailPage() {
           </aside>
         </div>
 
- 
-
         <section className="mt-10 border-t border-gray-200 pt-10">
           <h2 className="text-2xl font-semibold text-gray-950">Map</h2>
           <div className="relative mt-4 h-[360px] overflow-hidden rounded-lg bg-gray-100 ring-1 ring-gray-200">
@@ -811,16 +840,19 @@ export default function ProductDetailPage() {
               </p>
               {mapCoordinates && (
                 <p className="mt-1 text-xs text-gray-600">
-                  {mapCoordinates.lat.toFixed(6)}, {mapCoordinates.lng.toFixed(6)}
+                  {mapCoordinates.lat.toFixed(6)},{" "}
+                  {mapCoordinates.lng.toFixed(6)}
                 </p>
               )}
             </div>
           </div>
         </section>
-               <div className="mt-10">
-          <ReviewsSection rating={item.rating} reviewsCount={item.reviews_count} />
+        <div className="mt-10">
+          <ReviewsSection
+            rating={item.rating}
+            reviewsCount={item.reviews_count}
+          />
           {/* show all reviews  */}
-          
         </div>
       </div>
 

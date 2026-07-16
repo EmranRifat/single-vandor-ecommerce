@@ -20,8 +20,19 @@ export default function ProductCard({ item, index = 0 }: ItemCardProps) {
     <>
       <motion.div className="w-full">
         <Link href={itemPath} className="block h-full">
-          <div className="flex flex-col overflow-hidden rounded-2xl bg-white  bg-linear-to-r dark:from-gray-800 dark:to-gray-700 shadow-md hover:shadow-lg transition-shadow h-80">
-            <div className="relative w-full h-44 bg-gray-100 dark:bg-gray-600">
+          <div
+            className="
+    group relative flex h-80 flex-col overflow-hidden
+    rounded-2xl border border-gray-100
+    bg-white
+    shadow-sm
+    transition-all duration-500 ease-out
+    hover:-translate-y-2
+    hover:scale-[1.02]
+    hover:border-pink-200
+    hover:shadow-[0_20px_50px_rgba(236,72,153,0.18)]
+  "
+          >            <div className="relative w-full h-44 bg-gray-100 dark:bg-gray-600">
               <Image
                 width={400}
                 height={300}

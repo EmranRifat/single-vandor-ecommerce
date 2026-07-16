@@ -1,117 +1,100 @@
 import React from "react";
+import Link from "next/link";
+import { Facebook, Instagram, Twitter, Mail, MapPin } from "lucide-react";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-950 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+    <footer className="bg-slate-900 text-white">
+      <div className="mx-auto max-w-7xl px-5 py-12">
+        <div className="grid gap-10 md:grid-cols-3">
           {/* Brand */}
           <div>
-            <h3 className="text-2xl font-bold mb-4">ShopHub</h3>
-            <p className="text-gray-400 text-sm leading-6">
-              Your trusted online shopping destination for quality products,
-              fast delivery, and great service.
+            <h2 className="text-2xl font-bold text-pink-500">Homely</h2>
+
+            <p className="mt-4 max-w-sm text-sm leading-7 text-slate-400">
+              Find trusted rooms, apartments, and hotels across Bangladesh.
+              Homely makes booking and hosting simple, secure, and affordable.
             </p>
           </div>
 
-          {/* Customer Service */}
+          {/* Quick Links */}
           <div>
-            <h4 className="text-lg font-semibold mb-4">Customer Service</h4>
-            <ul className="space-y-3 text-sm text-gray-400">
+            <h3 className="mb-4 text-lg font-semibold">Quick Links</h3>
+
+            <ul className="space-y-3 text-sm text-slate-400">
               <li>
-                <a href="/contact" className="hover:text-white transition">
-                  Contact Us
-                </a>
+                <Link href="/" className="hover:text-pink-400 transition">
+                  Home
+                </Link>
               </li>
+
               <li>
-                <a href="/shipping" className="hover:text-white transition">
-                  Shipping Info
-                </a>
+                <Link href="/properties" className="hover:text-pink-400 transition">
+                  Properties
+                </Link>
               </li>
+
               <li>
-                <a href="/returns" className="hover:text-white transition">
-                  Returns
-                </a>
+                <Link href="/about" className="hover:text-pink-400 transition">
+                  About Us
+                </Link>
               </li>
+
               <li>
-                <a href="/faq" className="hover:text-white transition">
-                  FAQ
-                </a>
+                <Link href="/contact" className="hover:text-pink-400 transition">
+                  Contact
+                </Link>
               </li>
             </ul>
           </div>
 
-          {/* About */}
+          {/* Contact */}
           <div>
-            <h4 className="text-lg font-semibold mb-4">About</h4>
-            <ul className="space-y-3 text-sm text-gray-400">
-              <li>
-                <a href="/about" className="hover:text-white transition">
-                  Our Story
-                </a>
-              </li>
-              <li>
-                <a href="/careers" className="hover:text-white transition">
-                  Careers
-                </a>
-              </li>
-              <li>
+            <h3 className="mb-4 text-lg font-semibold">Contact</h3>
+
+            <div className="space-y-4 text-sm text-slate-400">
+              <div className="flex items-center gap-3">
+                <Mail className="h-4 w-4 text-pink-500" />
+                support@homely.com
+              </div>
+
+              <div className="flex items-center gap-3">
+                <MapPin className="h-4 w-4 text-pink-500" />
+                Dhaka, Bangladesh
+              </div>
+
+              <div className="flex gap-4 pt-2">
                 <a
-                  href="/privacy-policy"
-                  className="hover:text-white transition"
+                  href="#"
+                  className="rounded-full bg-slate-800 p-2 hover:bg-pink-500 transition"
                 >
-                  Privacy Policy
+                  <Facebook size={18} />
                 </a>
-              </li>
-              <li>
-                <a href="/terms" className="hover:text-white transition">
-                  Terms of Service
+
+                <a
+                  href="#"
+                  className="rounded-full bg-slate-800 p-2 hover:bg-pink-500 transition"
+                >
+                  <Instagram size={18} />
                 </a>
-              </li>
-            </ul>
-          </div>
 
-          {/* Newsletter */}
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Stay Updated</h4>
-            <p className="text-gray-400 text-sm mb-4">
-              Subscribe to get latest offers and updates.
-            </p>
-
-            <form className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                name="email"
-                autoComplete="email"
-                placeholder="Enter your email"
-                className="w-full rounded-md bg-gray-900 border border-gray-700 px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white"
-              />
-              <button
-                type="submit"
-                className="rounded-md bg-white text-gray-950 px-4 py-2 text-sm font-medium hover:bg-gray-200 transition"
-              >
-                Subscribe
-              </button>
-            </form>
+                <a
+                  href="#"
+                  className="rounded-full bg-slate-800 p-2 hover:bg-pink-500 transition"
+                >
+                  <Twitter size={18} />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-400">
-          <p>&copy; {currentYear} ShopHub. All rights reserved.</p>
-
-          <div className="flex gap-5">
-            <a href="#" className="hover:text-white transition">
-              Facebook
-            </a>
-            <a href="#" className="hover:text-white transition">
-              Instagram
-            </a>
-            <a href="#" className="hover:text-white transition">
-              Twitter
-            </a>
-          </div>
+        {/* Bottom */}
+        <div className="mt-10 border-t border-slate-800 pt-6 text-center text-sm text-slate-500">
+          © {currentYear} <span className="text-pink-500">Homely</span>. All
+          rights reserved.
         </div>
       </div>
     </footer>

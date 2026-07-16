@@ -279,8 +279,8 @@ export default function HostListingView() {
                       </span>
                     </td>
 
-                    <td className="px-4 py-4">
-                      <div className="flex justify-end gap-2 whitespace-nowrap">
+                    <td className="px-4 py-4 text-center">
+                      <div className="flex justify-center gap-2 whitespace-nowrap">
                         <button
                           type="button"
                           className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
