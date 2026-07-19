@@ -106,122 +106,133 @@ export default function SearchBar() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full min-w-0 max-w-5xl"
       >
-        <div className="flex min-w-0 items-center overflow-hidden rounded-full border border-gray-200 bg-white shadow-lg">
-          <label className="flex min-w-0 flex-1 cursor-text flex-col px-4 py-2 hover:bg-gray-100 sm:px-5 sm:py-3">
-            <span className="hidden text-xs font-semibold text-gray-950 sm:block">
-              Where
-            </span>
+       <div className="flex min-w-0 items-center overflow-hidden rounded-full border border-gray-200 bg-white shadow-lg transition-colors dark:border-gray-400 dark:bg-gray-800">
+  {/* Destination */}
+  <label className="flex min-w-0 flex-1 cursor-text flex-col px-4 py-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 sm:px-5 sm:py-3">
+    <span className="hidden text-xs font-semibold text-gray-900 dark:text-gray-100 sm:block">
+      Where
+    </span>
 
-            <input
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              placeholder="Search city"
-              className="h-9 w-full bg-transparent text-sm text-gray-600 outline-none sm:h-auto"
-            />
-          </label>
+    <input
+      value={destination}
+      onChange={(e) => setDestination(e.target.value)}
+      placeholder="Search city"
+      className="h-9 w-full bg-transparent text-sm text-gray-600 placeholder:text-gray-400 outline-none dark:text-gray-300 dark:placeholder:text-gray-500 sm:h-auto"
+    />
+  </label>
 
-          <Divider className="hidden md:block" />
+  <Divider className="hidden bg-gray-200 dark:bg-gray-700 md:block" />
 
-          <label className="hidden flex-1 cursor-pointer flex-col px-5 py-3 hover:bg-gray-100 md:flex">
-            <span className="text-xs font-semibold text-gray-950">Check in</span>
+  {/* Check In */}
+  <label className="hidden flex-1 cursor-pointer flex-col px-5 py-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 md:flex">
+    <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">
+      Check in
+    </span>
 
-            <input
-              type="date"
-              value={date.checkIn}
-              onChange={(e) =>
-                setDate((prev) => ({
-                  ...prev,
-                  checkIn: e.target.value,
-                  checkOut:
-                    prev.checkOut && prev.checkOut < e.target.value
-                      ? ""
-                      : prev.checkOut,
-                }))
-              }
-              className="bg-transparent text-sm text-gray-600 outline-none"
-            />
-          </label>
+    <input
+      type="date"
+      value={date.checkIn}
+      onChange={(e) =>
+        setDate((prev) => ({
+          ...prev,
+          checkIn: e.target.value,
+          checkOut:
+            prev.checkOut && prev.checkOut < e.target.value
+              ? ""
+              : prev.checkOut,
+        }))
+      }
+      className="bg-transparent text-sm text-gray-600 outline-none dark:text-gray-300 dark:[color-scheme:dark]"
+    />
+  </label>
 
-          <Divider className="hidden md:block" />
+  <Divider className="hidden bg-gray-200 dark:bg-gray-700 md:block" />
 
-          <label className="hidden flex-1 cursor-pointer flex-col px-5 py-3 hover:bg-gray-100 md:flex">
-            <span className="text-xs font-semibold text-gray-950">Check out</span>
+  {/* Check Out */}
+  <label className="hidden flex-1 cursor-pointer flex-col px-5 py-3 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 md:flex">
+    <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">
+      Check out
+    </span>
 
-            <input
-              type="date"
-              min={date.checkIn || undefined}
-              value={date.checkOut}
-              onChange={(e) =>
-                setDate((prev) => ({ ...prev, checkOut: e.target.value }))
-              }
-              className="bg-transparent text-sm text-gray-600 outline-none"
-            />
-          </label>
+    <input
+      type="date"
+      min={date.checkIn || undefined}
+      value={date.checkOut}
+      onChange={(e) =>
+        setDate((prev) => ({
+          ...prev,
+          checkOut: e.target.value,
+        }))
+      }
+      className="bg-transparent text-sm text-gray-600 outline-none dark:text-gray-300 dark:[color-scheme:dark]"
+    />
+  </label>
 
-          <Divider className="hidden lg:block" />
+  <Divider className="hidden bg-gray-200 dark:bg-gray-700 lg:block" />
 
-          <Popover>
-            <PopoverTrigger>
-              <button
-                type="button"
-                className="hidden cursor-pointer rounded-3xl px-5 py-2 text-left transition-all hover:bg-gray-100 lg:block"
-              >
-                <span className="block text-sm font-semibold text-black">
-                  Add guests
-                </span>
+  {/* Guests */}
+  <Popover>
+    <PopoverTrigger>
+      <button
+        type="button"
+        className="hidden cursor-pointer rounded-3xl px-5 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 lg:block"
+      >
+        <span className="block text-sm font-semibold text-gray-900 dark:text-gray-100">
+          Add guests
+        </span>
 
-                <span className="block text-sm text-gray-600">
-                  {totalGuests} guest{totalGuests > 1 ? "s" : ""}
-                  {guests.infants > 0
-                    ? ` - ${guests.infants} infant${
-                        guests.infants > 1 ? "s" : ""
-                      }`
-                    : ""}
-                </span>
+        <span className="block text-sm text-gray-600 dark:text-gray-400">
+          {totalGuests} guest{totalGuests > 1 ? "s" : ""}
+          {guests.infants > 0
+            ? ` • ${guests.infants} infant${
+                guests.infants > 1 ? "s" : ""
+              }`
+            : ""}
+        </span>
+      </button>
+    </PopoverTrigger>
 
-              </button>
-            </PopoverTrigger>
+    <PopoverContent className="w-[340px] rounded-3xl border border-gray-200 bg-white p-5 shadow-2xl dark:border-gray-700 dark:bg-gray-800">
+      <div className="flex w-full flex-col gap-5">
+        <GuestRow
+          title="Adults"
+          subtitle="Age 13+"
+          value={guests.adults}
+          onIncrement={() => updateGuest("adults", "increment")}
+          onDecrement={() => updateGuest("adults", "decrement")}
+          disableMinus={guests.adults <= 1}
+        />
 
-            <PopoverContent className="w-[340px] rounded-3xl border border-gray-200 p-5 shadow-2xl">
-              <div className="flex w-full flex-col gap-5">
-                <GuestRow
-                  title="Adults"
-                  subtitle="Age 13+"
-                  value={guests.adults}
-                  onIncrement={() => updateGuest("adults", "increment")}
-                  onDecrement={() => updateGuest("adults", "decrement")}
-                  disableMinus={guests.adults <= 1}
-                />
+        <GuestRow
+          title="Children"
+          subtitle="Age 2-12"
+          value={guests.children}
+          onIncrement={() => updateGuest("children", "increment")}
+          onDecrement={() => updateGuest("children", "decrement")}
+          disableMinus={guests.children <= 0}
+        />
 
-                <GuestRow
-                  title="Children"
-                  subtitle="Age 2-12"
-                  value={guests.children}
-                  onIncrement={() => updateGuest("children", "increment")}
-                  onDecrement={() => updateGuest("children", "decrement")}
-                  disableMinus={guests.children <= 0}
-                />
+        <GuestRow
+          title="Infants"
+          subtitle="Under 2"
+          value={guests.infants}
+          onIncrement={() => updateGuest("infants", "increment")}
+          onDecrement={() => updateGuest("infants", "decrement")}
+          disableMinus={guests.infants <= 0}
+        />
+      </div>
+    </PopoverContent>
+  </Popover>
 
-                <GuestRow
-                  title="Infants"
-                  subtitle="Under 2"
-                  value={guests.infants}
-                  onIncrement={() => updateGuest("infants", "increment")}
-                  onDecrement={() => updateGuest("infants", "decrement")}
-                  disableMinus={guests.infants <= 0}
-                />
-              </div>
-            </PopoverContent>
-          </Popover>
-
-          <button
-            type="submit"
-            aria-label="Search listings"
-            className="m-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FF385C] text-white transition hover:scale-105 sm:m-2 sm:h-12 sm:w-12"
-          >
-            <Search size={18} />
-          </button>
-        </div>
+  {/* Search Button */}
+  <button
+    type="submit"
+    aria-label="Search listings"
+    className="m-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FF385C] text-white transition-all duration-300 hover:scale-105 hover:bg-[#E31C5F] sm:m-2 sm:h-12 sm:w-12"
+  >
+    <Search size={18} />
+  </button>
+</div>
       </motion.div>
     </form>
   );

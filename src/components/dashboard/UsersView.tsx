@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { GetAllUsersResponse } from "@/lib/types/types";
-import { useGetAllUsers } from "@/lib/hooks/dashboard/UseGetAllUsers";
 import AdminTable from "./AdminTable";
 
 const PER_PAGE = 5;

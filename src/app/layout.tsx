@@ -39,8 +39,8 @@ export default function RootLayout({
       <body className={inter.className} suppressHydrationWarning>
         <AuthProvider>
           <Providers>
-            {/* <ConditionalNavbar /> */}
-            <Navbar/>
+            <ConditionalNavbar />
+            {/* <Navbar /> */}
             {children}
           </Providers>
         </AuthProvider>

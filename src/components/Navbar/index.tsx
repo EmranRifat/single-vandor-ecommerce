@@ -97,14 +97,16 @@ export default function Navbar() {
 
           <span
             className={`
-      ${
-        lang === "bn" ? "text-xl sm:text-2xl" : "text-lg sm:text-xl md:text-2xl"
-      }
-      font-extrabold
-      leading-none
-      tracking-tight
-      whitespace-nowrap
-    `}
+                ${
+                  lang === "bn"
+                    ? "text-xl sm:text-2xl"
+                    : "text-lg sm:text-xl md:text-2xl"
+                }
+                font-extrabold
+                leading-none
+                tracking-tight
+                whitespace-nowrap
+              `}
             style={{
               backgroundImage:
                 "linear-gradient(90deg, #b91c1c 0%, #ef4444 50%, #f97316 100%)",
@@ -186,7 +188,7 @@ export default function Navbar() {
                       </p>
                     </div>
                     <Link
-                      href="/dashboard"
+                      href="/admin/dashboard"
                       className="rounded-md px-3 py-2 text-sm text-gray-800 hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-700"
                     >
                       Dashboard

@@ -17,19 +17,29 @@ export interface RegUserResponse {
   message: string;
   isLoading: boolean;
 }
-export type All = {
+
+
+import { Dispatch, SetStateAction } from "react";
+
+export type User = {
   id: number;
   name: string;
   email: string;
-  role: string;
+  role: "user" | "admin" | "superadmin";
 };
 
 export type AuthContextType = {
-  user: All | null;
+  user: User | null;
   loading: boolean;
-  setUser: (user: All | null) => void;
+  setUser: Dispatch<SetStateAction<User | null>>;
   logout_user: () => void;
 };
+
+
+
+
+
+
 
 export type ApiResponse<T> = {
   status: "success" | "error";

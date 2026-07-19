@@ -43,15 +43,19 @@ export default function AdminTable() {
 
   const getRoleStyle = (role: string) => {
     switch (role.toLowerCase()) {
+      case "superadmin":
+        return "bg-purple-100 text-purple-700";
+
       case "admin":
         return "bg-rose-100 text-rose-700";
+
       case "host":
         return "bg-amber-100 text-amber-700";
+
       default:
         return "bg-sky-100 text-sky-700";
     }
   };
-
   const formatRole = (role: string) =>
     role.charAt(0).toUpperCase() + role.slice(1);
 

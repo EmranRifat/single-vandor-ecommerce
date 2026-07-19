@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import Navbar from "@/src/Navbar/navbar";
+import Navbar from "../Navbar";
 
 const dashboardPaths = ["/dashboard", "/admin/dashboard"];
 

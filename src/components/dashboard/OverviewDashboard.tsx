@@ -5,7 +5,6 @@ import {
   Home,
   ShieldCheck,
 } from "lucide-react";
-// import AdminTable from "./AdminTable";
 import { bookings, listings, pendingTasks, stats, users } from "./dashboard-data";
 
 const statIcons = [CircleDollarSign, Home, ClipboardList, ShieldCheck];
@@ -17,6 +16,8 @@ export default function OverviewDashboard() {
         {stats.map((stat, index) => {
           const Icon = statIcons[index];
 
+
+          
           return (
             <article
               key={stat.label}

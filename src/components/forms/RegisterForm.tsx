@@ -5,7 +5,14 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, FieldError, Input, Label, Spinner, TextField } from "@heroui/react";
+import {
+  Button,
+  FieldError,
+  Input,
+  Label,
+  Spinner,
+  TextField,
+} from "@heroui/react";
 import { toast } from "react-toastify";
 import MaterialInput from "../common/MaterialInput";
 import { useRegInviteUser } from "@/lib/hooks/useRegUser";
@@ -91,8 +98,11 @@ export default function RegisterForm() {
   return (
     <div className="p-4 max-w-md mx-auto">
       <form onSubmit={formik.handleSubmit} className="space-y-4">
-           {/* NAME */}
-        <motion.div initial={{ x: -300, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
+        {/* NAME */}
+        <motion.div
+          initial={{ x: -300, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+        >
           <TextField
             name="name"
             type="text"
@@ -115,7 +125,10 @@ export default function RegisterForm() {
         </motion.div>
 
         {/* EMAIL */}
-        <motion.div initial={{ x: -300, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
+        <motion.div
+          initial={{ x: -300, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+        >
           <TextField
             name="email"
             type="email"
@@ -138,7 +151,10 @@ export default function RegisterForm() {
         </motion.div>
 
         {/* PASSWORD */}
-        <motion.div initial={{ x: -300, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
+        <motion.div
+          initial={{ x: -300, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+        >
           <TextField
             name="password"
             isRequired
@@ -176,11 +192,18 @@ export default function RegisterForm() {
         </motion.div>
 
         {/* CONFIRM PASSWORD */}
-        <motion.div initial={{ x: -300, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
+        <motion.div
+          initial={{ x: -300, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+        >
           <TextField
             name="confirmPassword"
             isRequired
-            isInvalid={!!(formik.touched.confirmPassword && formik.errors.confirmPassword)}
+            isInvalid={
+              !!(
+                formik.touched.confirmPassword && formik.errors.confirmPassword
+              )
+            }
             validationBehavior="aria"
             variant="secondary"
             className="relative"
@@ -207,49 +230,67 @@ export default function RegisterForm() {
                 )}
               </button>
             </div>
-            {formik.touched.confirmPassword && formik.errors.confirmPassword && (
-              <FieldError>{formik.errors.confirmPassword}</FieldError>
-            )}
+            {formik.touched.confirmPassword &&
+              formik.errors.confirmPassword && (
+                <FieldError>{formik.errors.confirmPassword}</FieldError>
+              )}
           </TextField>
         </motion.div>
 
-        
         {/* ACTIONS */}
-        <div className="flex justify-between mt-6">
-          
-          <Button
-            type="button"
-            variant="ghost"
-            onPress={() => router.back()}
-          >
-            Back
-          </Button>
+        <div className="mt-6 flex items-center justify-between">
+  <Button
+    type="button"
+    variant="ghost"
+    onPress={() => router.back()}
+    className="h-11 rounded-xl border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-700 transition-all duration-300 hover:border-pink-500 hover:bg-pink-50 hover:text-pink-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-pink-500 dark:hover:bg-pink-500/10 dark:hover:text-pink-400"
+  >
+    ← Back
+  </Button>
 
-          {/* HeroUI v3 Button has no "color" or "isLoading" prop — use variant + Spinner */}
-          <Button type="submit" variant="primary" isDisabled={isPending || loading}>
-            {isPending || loading ? (
-              <span className="flex items-center gap-2">
-                <Spinner size="sm" />
-                Registering...
-              </span>
-            ) : (
-              "Register"
-            )}
-          </Button>
-        </div>
+  <Button
+    type="submit"
+    variant="primary"
+    isDisabled={isPending || loading}
+    className="h-11 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 px-7 text-sm font-semibold text-white shadow-lg shadow-pink-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:from-pink-600 hover:to-rose-600 hover:shadow-pink-500/40 disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-pink-900/30"
+  >
+    {isPending || loading ? (
+      <span className="flex items-center gap-2">
+        <Spinner size="sm" />
+        Registering...
+      </span>
+    ) : (
+      <span className="flex items-center gap-2">
+        Register
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M13 7l5 5m0 0l-5 5m5-5H6"
+          />
+        </svg>
+      </span>
+    )}
+  </Button>
+</div>
 
         {/* SUCCESS MESSAGE */}
         {data?.message && (
-        <p className="text-green-500 text-center text-sm">
-            {data.message}
-        </p>
+          <p className="text-green-500 text-center text-sm">{data.message}</p>
         )}
 
         {/* ERROR MESSAGE */}
         {error && (
-        <p className="text-red-500 text-center text-sm">
+          <p className="text-red-500 text-center text-sm">
             {(error as Error).message}
-        </p>
+          </p>
         )}
       </form>
     </div>

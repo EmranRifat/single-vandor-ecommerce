@@ -102,12 +102,12 @@ const formatDate = (date?: Date) =>
 const formatDateRange = (range?: DateRange) =>
   range?.from && range?.to
     ? `${range.from.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    })} - ${range.to.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    })}`
+        month: "short",
+        day: "numeric",
+      })} - ${range.to.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      })}`
     : range?.from
       ? formatDate(range.from) || "Select available dates"
       : "Select available dates";
@@ -115,14 +115,13 @@ const formatDateRange = (range?: DateRange) =>
 const formatSubmittedDate = (date: string | null) =>
   date
     ? new Date(date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    })
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
     : "Not selected";
 
 export type AvailabilitySelectionMode = "single" | "range";
-
 
 export default function HostSetupPage() {
   const router = useRouter();
@@ -140,10 +139,8 @@ export default function HostSetupPage() {
     DateRange | undefined
   >(defaultAvailabilityRange);
 
-
   const [submittedData, setSubmittedData] =
     useState<HostListingSubmission | null>(null);
-
 
   const [form, setForm] = useState({
     title: "",
@@ -505,22 +502,27 @@ export default function HostSetupPage() {
   const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${mapBbox}&layer=mapnik&marker=${form.latitude},${form.longitude}`;
 
   return (
-    <main className="min-h-[calc(100vh-80px)] bg-white text-gray-950">
+    <main className="min-h-[calc(100vh-80px)] bg-white text-gray-950 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
+      {" "}
       <form
         onSubmit={handleSubmit}
         className="mx-auto flex min-h-[calc(100vh-80px)] max-w-5xl flex-col px-4 sm:px-6"
       >
-        <div className="h-1.5 bg-gray-200">
+        <div className="h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-slate-800 mt-2">
           <div
-            className={`h-full bg-gray-950 transition-all ${step === 1 ? "w-1/3" : step === 2 ? "w-2/3" : "w-full"
-              }`}
+            className={`h-full bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 transition-all duration-500 ${
+              step === 1 ? "w-1/3" : step === 2 ? "w-2/3" : "w-full"
+            } dark:from-pink-500 dark:via-fuchsia-500 dark:to-violet-500`}
           />
         </div>
 
         {step === 1 ? (
           <section className="flex w-full max-w-4xl flex-1 flex-col pb-28 pt-8 sm:pt-12">
-            <p className="text-sm font-semibold text-pink-500">Step 1 of 3</p>
-            <h1 className="mt-3 max-w-2xl text-3xl font-bold leading-tight tracking-normal text-gray-950 sm:text-4xl">
+            <p className="text-sm font-semibold text-pink-500 dark:text-pink-400">
+              Step 1 of 3
+            </p>
+
+            <h1 className="mt-3 max-w-2xl text-3xl font-bold leading-tight tracking-normal text-gray-950 dark:text-white sm:text-4xl">
               Which of these best describes your property?
             </h1>
 
@@ -533,15 +535,17 @@ export default function HostSetupPage() {
                     key={id}
                     type="button"
                     onClick={() => setSelectedType(id)}
-                    className={`flex min-h-[150px] flex-col items-center justify-center gap-5 rounded-lg border p-5 text-center transition ${isSelected
-                      ? "border-pink-500 bg-pink-50 shadow-sm ring-2 ring-pink-100"
-                      : "border-gray-300 bg-gray-50 hover:border-gray-950"
-                      }`}
+                    className={`flex min-h-[150px] flex-col items-center justify-center gap-5 rounded-lg border p-5 text-center transition-all duration-300 ${
+                      isSelected
+                        ? "border-pink-500 bg-pink-50 shadow-sm ring-2 ring-pink-100 dark:bg-pink-500/10 dark:ring-pink-500/30"
+                        : "border-gray-300 bg-gray-50 hover:border-pink-500 hover:shadow-md dark:border-slate-700 dark:bg-slate-900 dark:hover:border-pink-500 dark:hover:bg-slate-800"
+                    }`}
                   >
-                    <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-gray-200">
-                      <Icon className="h-8 w-8 text-gray-950" />
+                    <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-gray-200 dark:bg-slate-800 dark:ring-slate-600">
+                      <Icon className="h-8 w-8 text-gray-950 dark:text-white" />
                     </span>
-                    <span className="text-sm font-bold text-gray-950">
+
+                    <span className="text-sm font-bold text-gray-950 dark:text-white">
                       {label}
                     </span>
                   </button>
@@ -807,8 +811,8 @@ export default function HostSetupPage() {
               </div>
             </div>
 
-            <div className="mt-5 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-              <div className="divide-y divide-gray-200">
+            <div className="mt-5 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              <div className="divide-y divide-gray-200 dark:divide-slate-700">
                 {[
                   {
                     key: "bedrooms" as const,
@@ -840,10 +844,10 @@ export default function HostSetupPage() {
                     className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
                   >
                     <div>
-                      <p className="text-base font-bold text-gray-950">
+                      <p className="text-base font-bold text-gray-950 dark:text-white">
                         {item.label}
                       </p>
-                      <p className="mt-0.5 text-sm text-gray-500">
+                      <p className="mt-0.5 text-sm text-gray-500 dark:text-slate-400">
                         {item.hint}
                       </p>
                     </div>
@@ -949,10 +953,11 @@ export default function HostSetupPage() {
                 {hostDetailsPreview.map((detail) => (
                   <div
                     key={detail.label}
-                    className={`rounded-xl border border-gray-200 bg-gray-50 p-3 ${detail.label === "Host" || detail.label === "Description"
-                      ? "sm:col-span-2"
-                      : ""
-                      }`}
+                    className={`rounded-xl border border-gray-200 bg-gray-50 p-3 ${
+                      detail.label === "Host" || detail.label === "Description"
+                        ? "sm:col-span-2"
+                        : ""
+                    }`}
                   >
                     <p className="text-xs font-semibold uppercase tracking-[0.08em] text-gray-500">
                       {detail.label}
@@ -965,12 +970,12 @@ export default function HostSetupPage() {
           </section>
         )}
 
-        <footer className="fixed inset-x-0 bottom-0 border-t-2 border-gray-950 bg-white">
+        <footer className="fixed inset-x-0 bottom-0 border-t border-gray-200 bg-white/95 backdrop-blur-md transition-colors duration-300 dark:border-slate-700 dark:bg-slate-950/95">
           <div className="mx-auto flex h-24 max-w-5xl items-center justify-between px-4 sm:px-6">
             {step === 1 ? (
               <Link
                 href="/become-a-host"
-                className="text-sm font-semibold text-gray-700 underline underline-offset-4 transition hover:text-gray-950"
+                className="text-sm font-semibold text-gray-700 underline underline-offset-4 transition hover:text-gray-950 dark:text-slate-300 dark:hover:text-white"
               >
                 Back
               </Link>
@@ -978,7 +983,7 @@ export default function HostSetupPage() {
               <button
                 type="button"
                 onClick={handleBack}
-                className="text-sm font-semibold text-gray-700 underline underline-offset-4 transition hover:text-gray-950"
+                className="text-sm font-semibold text-gray-700 underline underline-offset-4 transition hover:text-gray-950 dark:text-slate-300 dark:hover:text-white"
               >
                 Back
               </button>
@@ -988,7 +993,7 @@ export default function HostSetupPage() {
               type={step === 1 ? "button" : "submit"}
               disabled={!selectedType || isPending}
               onClick={step === 1 ? handleNext : undefined}
-              className="inline-flex h-14 min-w-36 items-center justify-center gap-2 rounded-lg bg-pink-500 px-8 text-sm font-bold text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:bg-gray-300"
+              className="inline-flex h-14 min-w-36 items-center justify-center gap-2 rounded-lg bg-pink-500 px-8 text-sm font-bold text-white shadow-lg shadow-pink-500/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-pink-600 hover:shadow-pink-500/40 disabled:cursor-not-allowed disabled:bg-gray-300 dark:shadow-pink-900/30 dark:disabled:bg-slate-700"
             >
               {step === 3 ? "Submit" : "Next"}
               {step !== 3 && <ChevronRight className="h-4 w-4" />}

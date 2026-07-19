@@ -11,7 +11,11 @@ const AuthContext = createContext<AuthContextType>({
   logout_user: () => {},
 });
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +24,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const storedUser = Cookies.get("user");
 
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser) as User;
+        setUser(parsedUser);
       }
     } catch (error) {
       console.error("Failed to parse user cookie:", error);
@@ -38,7 +43,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, setUser, logout_user }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        setUser,
+        logout_user,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
