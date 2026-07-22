@@ -1,5 +1,5 @@
+import UserListTable from "@/src/components/dashboard/ManageUserList";
 import DashboardShell from "@/src/components/dashboard/DashboardShell";
-import UsersView from "@/src/components/dashboard/UsersView";
 
 export default function AdminUsersPage() {
   return (
@@ -9,7 +9,7 @@ export default function AdminUsersPage() {
       title="Manage users"
       description="Review guest, host, and admin accounts."
     >
-      <UsersView />
+      <UserListTable />
     </DashboardShell>
   );
 }

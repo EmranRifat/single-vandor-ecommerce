@@ -9,9 +9,9 @@ import {
   Star,
   Tag,
 } from "lucide-react";
-import { Slider } from "@/src/components/ui/slider";
 import { Checkbox } from "@/src/components/ui/checkbox";
 import { Category, SideCategory } from "@/lib/types/types";
+import { Slider } from "../ui/slider";
 
 export type ProductSortOption =
   | "recommended"

@@ -239,47 +239,47 @@ export default function RegisterForm() {
 
         {/* ACTIONS */}
         <div className="mt-6 flex items-center justify-between">
-  <Button
-    type="button"
-    variant="ghost"
-    onPress={() => router.back()}
-    className="h-11 rounded-xl border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-700 transition-all duration-300 hover:border-pink-500 hover:bg-pink-50 hover:text-pink-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-pink-500 dark:hover:bg-pink-500/10 dark:hover:text-pink-400"
-  >
-    ← Back
-  </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            onPress={() => router.back()}
+            className="h-11 rounded-xl border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-700 transition-all duration-300 hover:border-pink-500 hover:bg-pink-50 hover:text-pink-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-pink-500 dark:hover:bg-pink-500/10 dark:hover:text-pink-400"
+          >
+            ← Back
+          </Button>
 
-  <Button
-    type="submit"
-    variant="primary"
-    isDisabled={isPending || loading}
-    className="h-11 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 px-7 text-sm font-semibold text-white shadow-lg shadow-pink-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:from-pink-600 hover:to-rose-600 hover:shadow-pink-500/40 disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-pink-900/30"
-  >
-    {isPending || loading ? (
-      <span className="flex items-center gap-2">
-        <Spinner size="sm" />
-        Registering...
-      </span>
-    ) : (
-      <span className="flex items-center gap-2">
-        Register
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-4 w-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M13 7l5 5m0 0l-5 5m5-5H6"
-          />
-        </svg>
-      </span>
-    )}
-  </Button>
-</div>
+          <Button
+            type="submit"
+            variant="primary"
+            isDisabled={isPending || loading}
+            className="h-11 rounded-xl bg-gradient-to-r from-pink-500 to-rose-500 px-7 text-sm font-semibold text-white shadow-lg shadow-pink-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:from-pink-600 hover:to-rose-600 hover:shadow-pink-500/40 disabled:cursor-not-allowed disabled:opacity-60 dark:shadow-pink-900/30"
+          >
+            {isPending || loading ? (
+              <span className="flex items-center gap-2">
+                <Spinner size="sm" />
+                Registering...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                Register
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                  />
+                </svg>
+              </span>
+            )}
+          </Button>
+        </div>
 
         {/* SUCCESS MESSAGE */}
         {data?.message && (

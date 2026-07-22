@@ -11,11 +11,17 @@ import Cookies from "js-cookie";
 import { useAuth } from "@/lib/auth-context";
 import { EyeSlashIcon } from "../common/icons/EyeSlashIcon";
 import { EyeIcon } from "../common/icons/EyeIcon";
+import {
+  FieldError,
+  Label,
+  Spinner,
+  TextField,
+} from "@heroui/react";
 
 type UserLoginData = {
-  email: string;
-  password: string;
-};
+    email: string;
+    password: string;
+  };
 
 export default function LoginForm() {
   const router = useRouter();
@@ -88,74 +94,88 @@ export default function LoginForm() {
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.15 }}
       >
-        <Input
-          id="email"
-          name="email"
-          label="Enter Your Email"
-          type="email"
-          value={formik.values.email}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          errorMessage={
-            formik.touched.email && formik.errors.email
-              ? formik.errors.email
-              : ""
-          }
-          variant="bordered"
-          isRequired
-        />
-      </motion.div>
+       <TextField
+  name="email"
+  isInvalid={!!(formik.touched.email && formik.errors.email)}
+>
+  <Label>Email</Label>
 
-      {/* PASSWORD */}
-      <motion.div
-        initial={{ x: -300, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.15, delay: 0.05 }}
-      >
-        <Input
-          endContent={
-            <button
-              aria-label="toggle password visibility"
-              className="focus:outline-solid outline-transparent"
-              type="button"
-              onClick={toggleVisibility}
-            >
-              {isVisible ? (
-                <EyeSlashIcon className="text-xl text-default-400 pointer-events-none" />
-              ) : (
-                <EyeIcon className="text-xl text-default-400 pointer-events-none" />
-              )}
-            </button>
-          }
-          id="password"
-          name="password"
-          label="Enter Your Password"
-          type={isVisible ? "text" : "password"}
-          value={formik.values.password}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          errorMessage={
-            formik.touched.password && formik.errors.password
-              ? formik.errors.password
-              : ""
-          }
-          variant="bordered"
-          isRequired
-        />
+  <Input
+    name="email"
+    value={formik.values.email}
+    onChange={formik.handleChange}
+    onBlur={formik.handleBlur}
+  />
+
+  <FieldError>{formik.errors.email}</FieldError>
+</TextField>
       </motion.div>
+{/* PASSWORD */}
+<motion.div
+  initial={{ x: -300, opacity: 0 }}
+  animate={{ x: 0, opacity: 1 }}
+  transition={{ duration: 0.15, delay: 0.05 }}
+>
+  <TextField
+    name="password"
+    isRequired
+    isInvalid={!!(formik.touched.password && formik.errors.password)}
+    validationBehavior="aria"
+    variant="secondary"
+    className="relative"
+  >
+    <Label>Enter Your Password</Label>
+
+    <div className="relative">
+      <Input
+        name="password"
+        type={isVisible ? "text" : "password"}
+        value={formik.values.password}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        className="w-full py-2.5 pr-10"
+      />
+
+      <button
+        type="button"
+        aria-label="Toggle password visibility"
+        onClick={toggleVisibility}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-default-400 hover:text-default-600 focus:outline-none"
+      >
+        {isVisible ? (
+          <EyeSlashIcon className="pointer-events-none h-5 w-5" />
+        ) : (
+          <EyeIcon className="pointer-events-none h-5 w-5" />
+        )}
+      </button>
+    </div>
+
+    {formik.touched.password && formik.errors.password && (
+      <FieldError>{formik.errors.password}</FieldError>
+    )}
+  </TextField>
+</motion.div>
 
       {/* ERROR */}
       {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
       {/* BUTTON */}
-      <Button
-        type="submit"
-        color="success"
-        className="w-full text-white py-4 text-md"
-        isLoading={loading}
-      >
-        Login
-      </Button>
+     {/* BUTTON */}
+<Button
+  type="submit"
+  size="lg"
+  isDisabled={loading}
+  className="w-full rounded-lg bg-gradient-to-r from-red-600 to-orange-500 py-4 text-base font-semibold text-white transition-all hover:from-red-700 hover:to-orange-600 disabled:cursor-not-allowed disabled:opacity-70"
+>
+  {loading ? (
+    <span className="flex items-center justify-center gap-2">
+      <Spinner size="sm" />
+      Logging in...
+    </span>
+  ) : (
+    "Login"
+  )}
+</Button>
     </form>
   );
 }

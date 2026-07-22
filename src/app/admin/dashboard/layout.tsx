@@ -31,7 +31,12 @@ export default function DashboardLayout({
   }
 
   const role = user.role;
-  if (role !== "admin" && role !== "superadmin") {
+  if (
+    role != "admin" &&
+    role != "Admin" &&
+    role != "superadmin" &&
+    role != "SuperAdmin"
+  ) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-100">
         <div className="max-w-md rounded-xl bg-white p-8 text-center shadow-lg">

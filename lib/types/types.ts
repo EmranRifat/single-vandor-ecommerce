@@ -25,7 +25,7 @@ export type User = {
   id: number;
   name: string;
   email: string;
-  role: "user" | "admin" | "superadmin";
+  role: "user" | "admin" | "Admin" | "superadmin" | "SuperAdmin";
 };
 
 export type AuthContextType = {
@@ -510,3 +510,29 @@ export interface GetBookingsResponse {
   data: Booking[];
   pagination: BookingPagination;
 }
+
+
+export interface Review {
+  id: number;
+  user_id: number;
+  listing_id: number;
+  rating: number;
+  comment: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GetReviewsResponse {
+  status: string;
+  message: string;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  data: Review[];
+}
+
+

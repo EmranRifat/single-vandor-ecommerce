@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import ThemeToggler from "./ThemeToggler";
 import SearchBar from "../Products/SearchBar";
+import { Suspense } from "react";
 
 export default function Navbar() {
   const { user, loading, setUser, logout_user } = useAuth();
@@ -120,7 +121,9 @@ export default function Navbar() {
           </span>
         </Link>
         <div className="mx-auto hidden max-w-4xl px-6 md:block lg:px-10">
-          <SearchBar />
+          <Suspense fallback={<div className="h-12 w-full" />}>
+            <SearchBar />
+          </Suspense>
         </div>
 
         <div className="flex shrink-0 items-center justify-end gap-2 sm:gap-3">
@@ -210,7 +213,9 @@ export default function Navbar() {
 
       {!isMenuOpen ? (
         <div className="border-t border-gray-100 px-2 py-2.5 sm:px-4 dark:border-gray-700 md:hidden">
-          <SearchBar />
+          <Suspense fallback={null}>
+            <SearchBar />
+          </Suspense>
         </div>
       ) : null}
     </nav>

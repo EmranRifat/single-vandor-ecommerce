@@ -5,11 +5,19 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, Input, Spinner } from "@heroui/react";
+import {
+  Button,
+  FieldError,
+  Input,
+  Label,
+  Spinner,
+  TextField,
+} from "@heroui/react";
 import { toast } from "react-toastify";
-import { useRegInviteUser } from "@/hooks/useRegUser";
+// import { useRegInviteUser } from "@/hooks/useRegUser";
 import { EyeIcon } from "../common/icons/EyeIcon";
 import { EyeSlashIcon } from "../common/icons/EyeSlashIcon";
+import { useRegInviteUser } from "@/lib/hooks/useRegUser";
 // import { EyeIcon } from "../common/icons/EyeIcon";
 
 interface FormValues {
@@ -21,17 +29,16 @@ interface FormValues {
 }
 
 export default function RegisterForm() {
-
   const router = useRouter();
   const searchParams = useSearchParams();
   const tokenState = searchParams.get("token") || "";
-const [message, setMessage] = useState("");
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-   const [isVisible, setIsVisible] = React.useState(false);
+  const [isVisible, setIsVisible] = React.useState(false);
   const { mutate, data, error, isPending } = useRegInviteUser();
-    const toggleVisibility = () => setIsVisible(!isVisible);
-  console.log("muted data ..",data?.message)
-  console.log("muted error ..",error?.message)
+  const toggleVisibility = () => setIsVisible(!isVisible);
+  console.log("muted data ..", data?.message);
+  console.log("muted error ..", error?.message);
   const formik = useFormik<FormValues>({
     initialValues: {
       name: "",
@@ -44,9 +51,7 @@ const [message, setMessage] = useState("");
     validationSchema: Yup.object({
       name: Yup.string().required("Name is required"),
 
-      email: Yup.string()
-        .email("Invalid email")
-        .required("Email is required"),
+      email: Yup.string().email("Invalid email").required("Email is required"),
 
       password: Yup.string()
         .min(4, "Password must be at least 4 characters")
@@ -57,7 +62,6 @@ const [message, setMessage] = useState("");
         .required("Confirm Password is required"),
     }),
 
-   
     onSubmit: (values) => {
       const formData = {
         ...values,
@@ -66,21 +70,21 @@ const [message, setMessage] = useState("");
 
       setLoading(true);
       mutate(formData, {
-       onSuccess: (response) => {
-  console.log("setPass Form submitted response ==>>:", response);
+        onSuccess: (response) => {
+          console.log("setPass Form submitted response ==>>:", response);
 
-  setLoading(false);
-  setMessage(response.message);
+          setLoading(false);
+          setMessage(response.message);
 
-  if (response.status === "success") {
-    toast.success(response.message);
-    router.push("/login");
-  }
+          if (response.status === "success") {
+            toast.success(response.message);
+            router.push("/login");
+          }
 
-  if (response.status === "failed") {
-    toast.error(response.message);
-  }
-},
+          if (response.status === "failed") {
+            toast.error(response.message);
+          }
+        },
         onError: (error: any) => {
           console.error("Form submission failed:", error);
           setLoading(false);
@@ -91,138 +95,149 @@ const [message, setMessage] = useState("");
 
   return (
     <div className="p-4 max-w-md mx-auto">
-
       <form onSubmit={formik.handleSubmit} className="space-y-4">
-
-        <motion.div
-          initial={{ x: -300, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
+        <TextField
+          name="name"
+          isRequired
+          isInvalid={!!(formik.touched.name && formik.errors.name)}
+          validationBehavior="aria"
+          variant="secondary"
         >
+          <Label>Enter Your Name</Label>
+
           <Input
-            id="name"
             name="name"
-            label="Enter Your Name"
-            type="text"
             value={formik.values.name}
-            errorMessage={formik.errors.name || ""}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            variant="bordered"
+            className="w-full"
           />
-        </motion.div>
 
-        <motion.div
-          initial={{ x: -300, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
+          {formik.touched.name && formik.errors.name && (
+            <FieldError>{formik.errors.name}</FieldError>
+          )}
+        </TextField>
+
+        <TextField
+          name="email"
+          isRequired
+          isInvalid={!!(formik.touched.email && formik.errors.email)}
+          validationBehavior="aria"
+          variant="secondary"
         >
+          <Label>Email</Label>
+
           <Input
-            id="email"
             name="email"
             type="email"
-            label="Email"
             value={formik.values.email}
-            errorMessage={formik.errors.email || ""}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            variant="bordered"
+            className="w-full"
           />
-        </motion.div>
 
-        <motion.div
-          initial={{ x: -300, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
+          {formik.touched.email && formik.errors.email && (
+            <FieldError>{formik.errors.email}</FieldError>
+          )}
+        </TextField>
+        <TextField
+          name="email"
+          isRequired
+          isInvalid={!!(formik.touched.email && formik.errors.email)}
+          validationBehavior="aria"
+          variant="secondary"
         >
-          <Input
-            id="password"
-            name="password"
-            label="Password"
-            value={formik.values.password}
-            errorMessage={formik.errors.password || ""}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            variant="bordered"
-           type={isVisible ? "text" : "password"}
-             endContent={
-                        <button
-                          aria-label="toggle password visibility"
-                          className="focus:outline-solid outline-transparent"
-                          type="button"
-                          onClick={toggleVisibility}
-                        >
-                          {isVisible ? (
-                            <EyeSlashIcon className="text-xl text-default-400 pointer-events-none" />
-                          ) : (
-                            <EyeIcon className="text-xl text-default-400 pointer-events-none" />
-                          )}
-                        </button>
-                      }
-          />
-        </motion.div>
+          <Label>Email</Label>
 
-        <motion.div
-          initial={{ x: -300, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-        >
           <Input
-            id="confirmPassword"
-            name="confirmPassword"
-            label="Confirm Password"
-            value={formik.values.confirmPassword}
-            errorMessage={formik.errors.confirmPassword || ""}
+            name="email"
+            type="email"
+            value={formik.values.email}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            variant="bordered"
-           type={isVisible ? "text" : "password"}
-             endContent={
-                        <button
-                          aria-label="toggle password visibility"
-                          className="focus:outline-solid outline-transparent"
-                          type="button"
-                          onClick={toggleVisibility}
-                        >
-                          {isVisible ? (
-                            <EyeSlashIcon className="text-xl text-default-400 pointer-events-none" />
-                          ) : (
-                            <EyeIcon className="text-xl text-default-400 pointer-events-none" />
-                          )}
-                        </button>
-                      }
+            className="w-full"
           />
-        </motion.div>
+
+          {formik.touched.email && formik.errors.email && (
+            <FieldError>{formik.errors.email}</FieldError>
+          )}
+        </TextField>
+
+        <TextField
+          name="confirmPassword"
+          isRequired
+          isInvalid={
+            !!(formik.touched.confirmPassword && formik.errors.confirmPassword)
+          }
+          validationBehavior="aria"
+          variant="secondary"
+        >
+          <Label>Confirm Password</Label>
+
+          <div className="relative">
+            <Input
+              name="confirmPassword"
+              type={isVisible ? "text" : "password"}
+              value={formik.values.confirmPassword}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              className="w-full pr-10"
+            />
+
+            <button
+              type="button"
+              onClick={toggleVisibility}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-default-500"
+            >
+              {isVisible ? (
+                <EyeSlashIcon className="h-5 w-5" />
+              ) : (
+                <EyeIcon className="h-5 w-5" />
+              )}
+            </button>
+          </div>
+
+          {formik.touched.confirmPassword && formik.errors.confirmPassword && (
+            <FieldError>{formik.errors.confirmPassword}</FieldError>
+          )}
+        </TextField>
 
         <div className="flex justify-between mt-6">
-          
           <Button
             type="button"
-            variant="ghost"
+            variant="secondary"
             onPress={() => router.back()}
           >
             Back
           </Button>
 
-         <Button
+          <Button
             type="submit"
-            color="primary"
-            isLoading={isPending}
-            >
-            Register
-        </Button>
+            isDisabled={isPending}
+            className="bg-gradient-to-r from-red-600 to-orange-500 text-white"
+          >
+            {isPending ? (
+              <span className="flex items-center gap-2">
+                <Spinner size="sm" />
+                Registering...
+              </span>
+            ) : (
+              "Register"
+            )}
+          </Button>
         </div>
-    {/* SUCCESS MESSAGE */}
+        {/* SUCCESS MESSAGE */}
         {data?.message && (
-        <p className="text-green-500 text-center text-sm">
-            {data.message}
-        </p>
+          <p className="text-green-500 text-center text-sm">{data.message}</p>
         )}
 
         {/* ERROR MESSAGE */}
         {error && (
-        <p className="text-red-500 text-center text-sm">
+          <p className="text-red-500 text-center text-sm">
             {(error as Error).message}
-        </p>
+          </p>
         )}
       </form>
-
     </div>
   );
 }

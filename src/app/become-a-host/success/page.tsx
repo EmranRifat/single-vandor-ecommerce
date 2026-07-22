@@ -1,24 +1,22 @@
-import {
-  CheckCircle2,
-  Home,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { CheckCircle2, Home, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 type HostSuccessPageProps = {
-  searchParams?: {
+  searchParams: Promise<{
     message?: string;
     title?: string;
-  };
+  }>;
 };
 
-export default function HostSuccessPage({
+export default async function HostSuccessPage({
   searchParams,
 }: HostSuccessPageProps) {
-  const message =
-    searchParams?.message || "Host listing created successfully";
-  const listingTitle = searchParams?.title || "Your listing";
+  const params = await searchParams;
+
+  const message = params.message ?? "Host listing created successfully";
+
+  const listingTitle = params.title ?? "Your listing";
+
   const balloons = [
     { left: "12%", top: "16%", color: "#fb7185", size: "64px" },
     { left: "72%", top: "10%", color: "#2dd4bf", size: "54px" },
@@ -33,7 +31,10 @@ export default function HostSuccessPage({
           <div className="flex items-center justify-center px-6 py-12 sm:px-10 lg:px-14">
             <div className="mx-auto flex max-w-xl flex-col items-center text-center">
               <div className="flex h-36 w-36 items-center justify-center rounded-full bg-[#69c48c] shadow-[0_22px_50px_rgba(105,196,140,0.28)]">
-                <CheckCircle2 className="h-20 w-20 text-white" strokeWidth={2.5} />
+                <CheckCircle2
+                  className="h-20 w-20 text-white"
+                  strokeWidth={2.5}
+                />
               </div>
 
               <h1 className="mt-9 text-4xl font-bold tracking-normal text-gray-950 sm:text-5xl">

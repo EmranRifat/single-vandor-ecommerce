@@ -1,5 +1,5 @@
 import DashboardShell from "@/src/components/dashboard/DashboardShell";
-import ReviewsView from "@/src/components/dashboard/ReviewsView";
+import ReviewTable from "@/src/components/dashboard/ReviewTable";
 
 export default function AdminReviewsPage() {
   return (
@@ -9,7 +9,7 @@ export default function AdminReviewsPage() {
       title="Manage reviews"
       description="Moderate guest feedback and listing review status."
     >
-      <ReviewsView />
+      <ReviewTable />
     </DashboardShell>
   );
 }
