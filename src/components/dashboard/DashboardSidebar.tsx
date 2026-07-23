@@ -10,6 +10,7 @@ import {
   Star,
   Users,
   X,
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -64,7 +65,21 @@ const sidebarItems = [
     icon: Settings,
     href: "/admin/dashboard/settings",
   },
+  {
+    key: "logout",
+    label: "Logout",
+    icon: LogOut,
+    href: "#",
+  },
 ];
+
+const handleLogout = () => {
+  document.cookie = "token=; path=/; max-age=0";
+  document.cookie = "user=; path=/; max-age=0";
+  document.cookie = "role=; path=/; max-age=0";
+
+  window.location.href = "/login";
+};
 
 type DashboardSidebarProps = {
   activeItem: string;
@@ -146,8 +161,14 @@ export default function DashboardSidebar({
                 return (
                   <Link
                     key={item.key}
-                    href={item.href}
-                    onClick={() => setMobileOpen(false)}
+                    href={item.key === "logout" ? "#" : item.href}
+                    onClick={(e) => {
+                      if (item.key === "logout") {
+                        e.preventDefault();
+                        handleLogout();
+                      }
+                      setMobileOpen(false);
+                    }}
                     className={`flex h-11 items-center gap-3 rounded-lg px-3 text-sm font-semibold transition ${
                       isActive
                         ? "bg-slate-950 text-white"
@@ -184,11 +205,19 @@ export default function DashboardSidebar({
             return (
               <Link
                 key={item.key}
-                href={item.href}
+                href={item.key === "logout" ? "#" : item.href}
+                onClick={(e) => {
+                  if (item.key === "logout") {
+                    e.preventDefault();
+                    handleLogout();
+                  }
+                }}
                 className={`flex h-11 shrink-0 items-center gap-3 rounded-lg px-3 text-sm font-semibold transition ${
                   isActive
-                    ? "bg-slate-950 text-white"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                    ? "bg-blue-600 text-white"
+                    : item.key === "logout"
+                      ? "text-red-600 hover:bg-red-50 hover:text-red-700"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
                 }`}
               >
                 <Icon className="h-4 w-4" />
