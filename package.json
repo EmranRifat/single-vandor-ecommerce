@@ -53,8 +53,6 @@
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
-    "eslint": "8.49.0",
-    "eslint-config-next": "^16.2.4",
     "formik": "^2.4.9",
     "framer-motion": "^12.35.2",
     "iconify": "^1.4.0",
@@ -63,7 +61,7 @@
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.446.0",
     "next": "^16.2.4",
-    "next-themes": "^0.3.0",
+    "next-themes": "^0.4.4",
     "particles-bg": "^2.5.5",
     "postcss": "^8.5.8",
     "react": "^19.2.5",
@@ -89,6 +87,8 @@
     "@types/js-cookie": "^3.0.6",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.2.4",
     "@types/yup": "^0.32.0",
     "typescript": "^6.x"
   }
