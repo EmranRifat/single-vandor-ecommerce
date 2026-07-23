@@ -5,16 +5,24 @@ import { Pagination } from "@heroui/react";
 import { useState } from "react";
 import { Select, Label, ListBox } from "@heroui/react";
 import { useUpdateUserRole } from "@/lib/hooks/dashboard/useUpdateUserRole";
+import DeleteConfirmationModal from "../modal/UserDeleteModal";
+import { useDeleteUser } from "@/lib/hooks/dashboard/useUserDelete";
+import { toast, ToastContainer } from "react-toastify";
+
 
 export default function UserTable() {
   const [roleModal, setRoleModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedRole, setSelectedRole] = useState("");
 
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+
   const [currentPage, setCurrentPage] = useState(1);
-  const perPage = 5;
+  const perPage = 10;
 
   const updateRoleMutation = useUpdateUserRole();
+  const deleteUserMutation = useDeleteUser();
 
   const {
     data: userData,
@@ -23,17 +31,6 @@ export default function UserTable() {
     error,
     refetch,
   } = useGetAllUsers(currentPage, perPage);
-
-  if (isLoading) {
-    return (
-      <section className="flex items-center justify-center rounded-lg border border-slate-200 bg-white p-10 shadow-sm">
-        <div className="flex flex-col items-center gap-3">
-          <span className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-emerald-500" />
-          <p className="text-sm text-slate-500">Loading users...</p>
-        </div>
-      </section>
-    );
-  }
 
   if (error) {
     return <div className="p-6 text-red-500">{error.message}</div>;
@@ -65,9 +62,47 @@ export default function UserTable() {
         return "bg-sky-100 text-sky-700";
     }
   };
+
   const formatRole = (role: string) =>
     role.charAt(0).toUpperCase() + role.slice(1);
 
+ const handleDeleteUser = () => {
+  if (selectedUserId === null) return;
+
+  deleteUserMutation.mutate(
+    {
+      id: selectedUserId,
+    },
+    {
+      onSuccess: (response) => {
+        console.log("Delete response:", response);
+
+        if (response.success) {
+          toast.success(response.message);
+        } else {
+          toast.error(response.message || "Delete failed");
+        }
+
+        setIsDeleteOpen(false);
+        setSelectedUserId(null);
+      },
+
+      onError: (error: any) => {
+        toast.error(error.message || "Failed to delete user");
+      },
+    }
+  );
+};
+  if (isLoading) {
+    return (
+      <section className="flex items-center justify-center rounded-lg border border-slate-200 bg-white p-10 shadow-sm">
+        <div className="flex flex-col items-center gap-3">
+          <span className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-emerald-500" />
+          <p className="text-sm text-slate-500">Loading users...</p>
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 p-5">
@@ -98,7 +133,8 @@ export default function UserTable() {
                   {column}
                 </th>
               ))}
-              <th className="w-[220px] px-5 py-4 text-center">Action</th>{" "}
+
+              <th className="w-[220px] px-5 py-4 text-center">Action</th>
             </tr>
           </thead>
 
@@ -117,10 +153,12 @@ export default function UserTable() {
                 <tr
                   key={user.id}
                   className="
-            transition
-            duration-200
-            hover:bg-slate-50
-          "
+                  transition
+                  duration-200
+                  odd:bg-white
+                  even:bg-slate-50
+                  hover:bg-slate-100
+                "
                 >
                   {/* Number */}
                   <td className="px-5 py-4 font-medium text-slate-600">
@@ -191,40 +229,43 @@ export default function UserTable() {
                         setRoleModal(true);
                       }}
                       className="
-                mr-2
-                rounded-lg
-                bg-emerald-100
-                px-3
-                py-2
-                text-xs
-                font-semibold
-                text-emerald-700
-                transition
-                hover:bg-emerald-500
-                hover:text-white
-                hover:shadow-md
-                active:scale-95
-              "
+                        mr-2
+                        rounded-lg
+                        bg-emerald-100
+                        px-3
+                        py-2
+                        text-xs
+                        font-semibold
+                        text-emerald-700
+                        transition
+                        hover:bg-emerald-500
+                        hover:text-white
+                        hover:shadow-md
+                        active:scale-95
+                      "
                     >
                       Change Role
                     </button>
 
                     <button
-                      disabled
                       className="
-                rounded-lg
-                bg-rose-100
-                px-3
-                py-2
-                text-xs
-                font-semibold
-                text-rose-700
-                transition
-                hover:bg-rose-500
-                hover:text-white
-                hover:shadow-md
-                active:scale-95
-              "
+                      rounded-lg
+                      bg-rose-100
+                      px-3
+                      py-2
+                      text-xs
+                      font-semibold
+                      text-rose-700
+                      transition
+                      hover:bg-rose-500
+                      hover:text-white
+                      hover:shadow-md
+                      active:scale-95
+                    "
+                      onClick={() => {
+                        setSelectedUserId(user.id);
+                        setIsDeleteOpen(true);
+                      }}
                     >
                       Delete
                     </button>
@@ -403,15 +444,15 @@ export default function UserTable() {
                   setSelectedUser(null);
                 }}
                 className="
-            rounded-xl
-            bg-slate-100
-            px-5
-            py-2.5
-            text-sm
-            font-medium
-            text-slate-700
-            hover:bg-slate-200
-          "
+                  rounded-xl
+                  bg-slate-100
+                  px-5
+                  py-2.5
+                  text-sm
+                  font-medium
+                  text-slate-700
+                  hover:bg-slate-200
+                "
               >
                 Cancel
               </button>
@@ -434,16 +475,16 @@ export default function UserTable() {
                   );
                 }}
                 className="
-              rounded-lg
-              bg-emerald-600
-              px-4
-              py-2
-              text-sm
-              font-semibold
-              text-white
-              hover:bg-emerald-700
-              disabled:opacity-50
-              "
+                  rounded-lg
+                  bg-emerald-600
+                  px-4
+                  py-2
+                  text-sm
+                  font-semibold
+                  text-white
+                  hover:bg-emerald-700
+                  disabled:opacity-50
+                  "
               >
                 {updateRoleMutation.isPending ? "Updating..." : "Update"}
               </button>
@@ -451,6 +492,20 @@ export default function UserTable() {
           </div>
         </div>
       )}
+      <DeleteConfirmationModal
+        isOpen={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        onConfirm={handleDeleteUser}
+        isLoading={deleteUserMutation.isPending}
+      />
+       <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          pauseOnHover
+        />
     </section>
   );
 }
